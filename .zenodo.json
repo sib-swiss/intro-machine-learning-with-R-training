@@ -1,15 +1,18 @@
 {
   "upload_type": "lesson",  
-  "title": "course template",
+  "title": "Introduction to Machine Learning with R",
   "license": "cc-by-sa-4.0",
   "keywords": [
+    "Machine Learning",
+    "R",
+    "course",
     "training"
   ],
   "creators": [
     {
-      "name": "Jane Doe",
+      "name": "Duchemin, Wandrille",
       "affiliation": "SIB Swiss Institute of Bioinformatics",
-      "orcid": "0000-0000-0000-0000"
+      "orcid": "0000-0001-8854-7235"
     }
   ]
 }
