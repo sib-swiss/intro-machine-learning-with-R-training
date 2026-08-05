@@ -12,6 +12,7 @@ library(GGally)
 library(RColorBrewer)
 library(umap)
 library(recipes)
+library(ggbiplot)
 ```
 
 # Data exploration
@@ -490,7 +491,6 @@ Looking at the first column, corresponding to PC1, we can see that replicates te
 This relationship is not so strong for lower PC axes.
 
 ```{r}
-library(ggbiplot)
 # we extract the underlying prcomp object from the recipe:
 prcomp_obj = phospho_PCA_recipe$steps[[6]]$res
 
