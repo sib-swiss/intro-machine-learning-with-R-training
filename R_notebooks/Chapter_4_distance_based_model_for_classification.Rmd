@@ -207,8 +207,8 @@ image source: wikipedia user Brian Amberg
 
 Choices here are:
 
- * `"rectangular"` (which is the standard unweighted knn)
- * `"triangular"`
+ * `"rectangular"`: each chosen neighbor votes the same (which is the standard unweighted knn)
+ * `"triangular"`: each chosen neighbors has a vote strength inversely proportional to the distance
  * `"epanechnikov"` (or beta(2,2))
  * `"biweight"` (or beta(3,3)), 
  * `"triweight"` (or beta(4,4)), 
@@ -404,7 +404,7 @@ By doing so we can be confident that our evaluation of the **ability of our mode
 
 We say that no information coming from the test set should leak into the train set. If this is the case, we are biasing our understanding of the generalizability of our model.
 
-To avoid **leakage** you should ensure your test set is absent from even the early stages of your pipeline, such as imputation or feature selection (so you have guessed it, most of the operations we have done until now have lead to leakage...).
+To avoid **leakage** you should ensure your test set is absent from even the early stages of your pipeline, such as imputation, normalization, or feature selection.
 
 
 ## applying all this to the cancer dataset
@@ -553,7 +553,7 @@ The L1 regularization may have more bias, and the L2 more variance.
 The elasticnet interpolates between these two situations at the cost of having and additional parameter $\alpha$.
 
 
-Let's look at the probaility curve of a logistic regression on a simplified version of the cancer data where we keep a single feature:
+Let's look at the probability curve of a logistic regression on a simplified version of the cancer data where we keep a single feature:
 
 ```{r}
 recipe_radius <- recipe( malignant ~ mean.radius + mean.symmetry , 
@@ -982,7 +982,7 @@ blobs = data.frame( x = rnorm( 100  ) + cat,
 ggplot(blobs , aes(x=x,y=y,col=label)) + geom_point()
 ```
 
-To start off, some models are just inadapted, such as the logistic regression:
+To start off, some models are just unsuitable, such as the logistic regression:
 
 ```{r}
 LR <- logistic_reg( engine = 'glm' ) %>%

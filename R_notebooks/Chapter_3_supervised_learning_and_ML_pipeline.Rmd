@@ -83,7 +83,31 @@ Where $Ex$ is the expression level of gene $x$, and $\beta_x$ is the associated 
 
 ------------------------------------------------------------------------
 
-Let's fit a simple linear model with our gene expression values, and see what happens
+Let's fit a simple linear model with our gene expression values, and see what happens.
+
+For this, we will introduce some syntax elements from [parsnip](https://parsnip.tidymodels.org/) and [yardstick](https://yardstick.tidymodels.org/):
+
+---
+
+With parsnip you instanciate a model, coming from a broad family and you set its `engine`, which represents the specific implementation you want.
+
+For example: `linear_reg( engine = 'lm' )` or `linear_reg( engine = 'stan' )` are both linear model, the first uses `lm()` while the second uses the bayesian methods of the `stan` package.
+
+Then this model need to be `fit( <formula> , <data> )` (ike the `prep()` of recipes)
+
+After that, you can use `predict()` with some data to get the prediction of your model.
+
+> A very useful resource: [searchable list of parsnip models](https://www.tidymodels.org/find/parsnip/)
+
+---
+
+[Yardstick](https://yardstick.tidymodels.org/) is about computing how well your models are doing: it implements all sorts of metrics, both for classification and regression.
+
+The score functions of yardstick usually come in two forms: 
+* the base form (e.g., `rsq`) expects a dataframe with specific columns (which is a standard output of tidymodels workflows)
+* the vector form (e.g., `rsq_vec`) expects 2 vectors: the truth, and the prediction
+
+---
 
 ```{r}
 
@@ -102,6 +126,8 @@ print(paste( "Root mean squared error: " ,
 ```
 
 **Wow!!** this is a (near) perfect fit.
+
+
 
 But if you know anything about biology, or data analysis, then you likely suspect something wrong is happening.
 
@@ -258,8 +284,10 @@ In order to find the optimal value of an hyper-parameter, we can separate our tr
 
 
 ```{r}
-
+## to split our training data into training and validation we will use
+## initial_split from rsample:
 split <- initial_split(X, prop = 0.7)
+
 X_train <- training(split)
 X_valid <- testing(split)
 
@@ -382,8 +410,10 @@ folds <- vfold_cv(X, v = 5)
 folds
 ```
 
+In order to put together model, data, recipes, and cross-validation scheme, we will use a workflow.
+
 ```{r}
-## we need to organize the model as a recipe or a workflow
+## we need to organize the model as a workflow
 LR_wf <- 
   workflow() %>%
   add_model( 
@@ -401,7 +431,7 @@ We can also get the metrics for each fold separately:
 ```{r}
 collect_metrics(LR_fit_res , summarize = FALSE)
 ```
-Now we can apply this to scan through different penalty strengths:
+Now we can apply this to scan through different penalty strengths by setting their initial value as `tune()` and defining a grid of values to explore:
 
 ```{r}
 
@@ -422,6 +452,8 @@ LR_grid %>% head()
 ```{r}
 LR_grid$penalty %>% summary()
 ```
+
+> alternatively, you can use grid_random to explore random values in a given range
 
 Here comes the cell which will fit all penatly values for each fold:
 
@@ -472,7 +504,7 @@ best_model
 
 
 
-### here I am re-using the code from before to compute and display performance on the treain and test sets
+### here I am re-using the code from before to compute and display performance on the train and test sets
 
 ## grouping and predicting 
 tmp = X %>% bind_rows( Xnew )
@@ -498,7 +530,7 @@ or how we perform scaling, or whether we consider interactions, and now you unde
 
 ## approach 4 : a "classical" ML pipeline 
 
-We will start back from scratch to recapitulate what we've seen and use scikit-learn's helpful recipes to solve the potato problem.
+We will start back from scratch to recapitulate what we've seen and use tidymodel's helpful recipes to solve the potato problem.
 
 
 We start by splitting our data in a train and a test set
@@ -518,9 +550,9 @@ Here comes the question : **"What should be my test-set size?"**
 There is not a single clear-cut answer to this and it depends a lots on the nature of your data and the of the problem you want to solve.
 
 
-On one hand, if you have **too few training samples**: your model will have a hard time finding the patterns in the data and will likily have poor permance.
+On one hand, if you have **too few training samples**: your model will have a hard time finding the patterns in the data and will likely have poor permance.
 
-On one hand, if you have **too few testing samples**: the evaluation of your model will be very imprecise.
+On the other hand, if you have **too few testing samples**: the evaluation of your model will be very imprecise.
 
 The typical thing you will see around is 80% training / 20% testing, or 75%/25% **BUT**
 
@@ -538,7 +570,7 @@ You can read more on this subject in this [blog post](https://www.r-bloggers.com
 
 Now we train a model while optimizing some hyper-parameters.
 
-On top of what we've done before, I add a scaling phase, and test different mixtures of l1 or l2 penalties.
+On top of what we've done before, I add a scaling phase, and test different mixtures of l1 or l2 penalties, using [glmnet](https://parsnip.tidymodels.org/reference/details_linear_reg_glmnet.html).
 
 
 ```{r}
