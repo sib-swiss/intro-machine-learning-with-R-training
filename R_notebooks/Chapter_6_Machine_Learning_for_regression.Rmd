@@ -1,0 +1,486 @@
+---
+title: "Chapter_5_machine_learning_for_regression"
+author: "Wandrille"
+date: "2026-08-07"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+library(pheatmap)
+library(tidymodels)
+library(rpart.plot)
+library(vip)
+library(ranger)
+```
+
+# Regression
+
+# Introduction : re-framing the target
+
+In that part we will use all the algorithms we have seen previously but in the frame of a regression rather than a classification.
+
+**The difference is that now our target vector (i.e. what we want to predict) is not a class (a discrete variable) but rather a number that can take a continuity of values.**
+
+The algorithms are going to use very similar methods than the ones used in classification, **the main change is the loss function used to train your model and the scoring used to evaluate this model.**
+
+**For classification** we saw two main types of **loss function**:
+
+-   (log-)likelihood for models such as the logidsitc regression
+-   GINI impurity, for trees
+
+And plenty of **scoring systems**, but at least two in depth:
+
+-   Accuracy
+-   Area under the ROC curve.
+
+In regression problems the loss functions and the scoring are metrics which you may already know.
+
+The two main **loss functions** that you will minimize while training your model are :
+
+-   Mean square error/ quadratic loss/ L2 loss **(MSE)** : $\frac{\Sigma^{n}_{i=1}(y_{i}-\hat{y}_{i})^{2}}{n}$
+-   Mean absolute error/ L1 loss **(MAE)** : $\frac{\Sigma^{n}_{i=1}|y_{i}-\hat{y}_{i}|}{n}$
+
+Where \* $n$ are the number of training examples \* $i$ the $i$-th training example in the data set \* $y_{i}$ the ground truth target value for that $i$-th example and \* $\hat{y_{i}}$ the estimated value of the target for the $i$-th example.
+
+And the **scores**
+
+-   value of the minimized loss function used (MSE or MAE)
+-   **R squared** : $1-\frac{\Sigma^{n}_{i=1}(y_{i}-\hat{y}_{i})^{2}}{\Sigma^{n}_{i=1}(y_{i}-\bar{y}_{i})^{2}}$: the proportion of the target's variance that's explained by the model
+-   **Adjusted R squared** : $1-(1-\frac{\Sigma^{n}_{i=1}(y_{i}-\hat{y}_{i})^{2}}{\Sigma^{n}_{i=1}(y_{i}-\bar{y}_{i})^{2}}\frac{n-1}{n-(k+1)})$ , with k the degree of freedom; similar to R-squared, but takes into account the number of variables in the model.
+-   **Max error** : $max(|y_{i}-\hat{y}_{i}|)$
+-   **Variance explained** : $1-\frac{Var(\{y_{i}-\bar{y}_{i}\}_{i})}{Var(\{y_{i}\}_{i})}$
+
+------------------------------------------------------------------------
+
+We will use a DNA methylation dataset from [Naue etal. 2017](https://www.sciencedirect.com/science/article/pii/S1872497317301643?via%3Dihub), as prepared for another [regression tutorial from the GTN](https://training.galaxyproject.org/training-material/topics/statistics/tutorials/regression_machinelearning/tutorial.html).
+
+It consists in measurements of the methylation levels of 13 biomarkers to try to predict age.
+
+The train and the test data have already been separated in two separate tables:
+
+```{r}
+df_meth = read.table( "https://zenodo.org/record/2545213/files/train_rows.csv",
+                      sep= '\t', header = TRUE
+                      )
+df_meth %>% head()
+```
+
+```{r}
+df_meth_test = read.table("https://zenodo.org/record/2545213/files/test_rows_labels.csv",
+                          sep= '\t', header = TRUE)
+df_meth_test %>% head()
+```
+
+```{r}
+print( paste( "train rows:", df_meth %>% nrow() ))
+print( paste( "test rows :", df_meth_test %>% nrow() ))
+
+print( df_meth %>% colnames() )
+```
+
+# A little bit on data exploration for regression
+
+let's check how the different features and the target interact with each others.
+
+```{r}
+cor_matrix = cor( df_meth, method = "pearson" )
+palette <- colorRampPalette(c("blue","white","red"))(100)
+pheatmap(cor_matrix,
+         display_numbers = TRUE,
+          color=palette, breaks=seq(-1,1,length.out=100))
+```
+
+We see that ELOVL2_6 has a very high correlation with age, the target. Perhaps a model with just this marker would be enough?
+
+```{r}
+ggplot(df_meth, aes( x = ELOVL2_6, y = Age )) + geom_point()
+```
+
+# Linear regression
+
+We will start with a reduced dataset for visualization purposes.
+
+```{r}
+X_ELOVL2_6 = df_meth %>% select( Age , ELOVL2_6 ) %>%
+    arrange(ELOVL2_6)
+## to plot nice curves, it is interesting to get an ordered version of X
+## points sorted by their values of ELOVL2_6
+
+X_ELOVL2_6 %>% head()
+```
+
+Here, as we will build a simple linear model with a single feature, we actually have no hyper-parameter at this point.
+
+So we can just build the model directly:
+
+```{r}
+model = linear_reg( engine = 'lm' ) %>%
+    fit( Age ~ ELOVL2_6 , X_ELOVL2_6 )
+X_ELOVL2_6_a = augment( model , X_ELOVL2_6 ) # adds predictions to X_ELOVL2
+
+R2  = rsq(  X_ELOVL2_6_a , truth = Age , estimate = .pred )
+RMSE= rmse( X_ELOVL2_6_a , truth = Age , estimate = .pred )
+
+## plotting
+ggplot( X_ELOVL2_6_a , aes( x = ELOVL2_6, y = Age )) +
+    geom_point() +
+    geom_line( aes( x = ELOVL2_6, y = .pred ) ) +
+    ggtitle( paste( "simple linear regression - R^2=" , 
+                    round(R2$.estimate,3) , " - RMSE=", round(RMSE$.estimate,2)  ) )
+
+```
+
+If we want to compute a cross-validated score for this simple model we can use:
+
+```{r}
+fit_resamples(
+  object    = linear_reg( engine = 'lm' ),
+  preprocessor = Age ~ ELOVL2_6,
+  resamples = vfold_cv(X_ELOVL2_6, v = 5)
+) %>% collect_metrics(summarize = TRUE)
+```
+
+The model seems OK-ish, but if you have some experience with linear models you may see something peculiar.
+
+It becomes more apparent when you look at residuals (ie. error from the model):
+
+```{r}
+## plotting
+ggplot( X_ELOVL2_6_a , aes( x = ELOVL2_6, y = .resid )) +
+    geom_point() +
+    geom_hline(yintercept=0 , linetype = 'dotted' ) + 
+    geom_smooth() +
+    ylab("residuals")
+```
+
+The pattern of residuals *may* be indicative of a higher order relationship between the marker and age.
+
+But if that's the case, what is an appropriate degree for this model?
+
+```{r}
+
+X_ELOVL2_6_augmented = X_ELOVL2_6
+
+for( degree in c(1,2,3,20)){
+
+    R = recipe( X_ELOVL2_6 , Age ~ ELOVL2_6 ) %>%
+                    step_poly( all_numeric_predictors(), degree = degree )
+
+    wf = workflow() %>% 
+        add_model( linear_reg( engine = 'lm' ) ) %>% 
+        add_recipe( R ) %>% 
+        fit( X_ELOVL2_6 )
+
+    X_ELOVL2_6_augmented[ paste0("deg",degree) ] = predict( wf , X_ELOVL2_6 )$.pred
+}
+
+```
+
+```{r}
+ggplot( X_ELOVL2_6_augmented , aes( x = ELOVL2_6, y = Age ) ) +
+    geom_point() +
+    geom_line( aes(y=deg1), color = '#bfd3e6', linewidth = 1 ) + 
+    geom_line( aes(y=deg2), color = '#8c96c6', linewidth = 1 ) +
+    geom_line( aes(y=deg3), color = '#88419d', linewidth = 1 ) +
+    geom_line( aes(y=deg20), color = '#4d004b', linewidth = 1 ) 
+```
+
+```{r}
+for( degree in c(1,2,3,20)){
+    R2 = rsq_vec( X_ELOVL2_6_augmented$Age , X_ELOVL2_6_augmented[,paste0('deg',degree)] )
+    RMSE = rmse_vec( X_ELOVL2_6_augmented$Age , X_ELOVL2_6_augmented[,paste0('deg',degree)] )
+    print(paste('degree',degree,' - R^2=',round(R2,3),' - RMSE=',round(RMSE,2)))
+}    
+```
+
+-   which degree relationship is appropriate then ?
+-   what of the other biomarkers ?
+
+You guessed it, we come back again to hyper-parameters we have to evaluate in order to find the most appropriate model.
+
+```{r}
+R = recipe( X_ELOVL2_6 , Age ~ ELOVL2_6 ) %>%
+                step_poly( all_numeric_predictors(), degree = tune() )
+
+wf = workflow() %>% 
+    add_model( linear_reg( engine = 'lm' ) ) %>% 
+    add_recipe( R )
+
+
+degree_res <- 
+  wf %>% 
+  tune_grid(
+    resamples = vfold_cv(X_ELOVL2_6, v = 10),
+    grid = grid_regular( list( degree = degree_int( range = c(1,10) )) , levels = 10)
+    )
+
+degree_metrics = degree_res %>% collect_metrics()
+
+p1 = ggplot( degree_metrics %>% filter(.metric == 'rsq') , 
+             aes( x = degree , y = mean ) ) + geom_line() + ylab( "R-square" )
+p2 = ggplot( degree_metrics %>% filter(.metric == 'rmse') , 
+             aes( x = degree , y = mean ) ) + geom_line() + ylab( "RMSE" )
+grid.arrange(p1,p2,ncol=2)
+```
+
+So it seems that increasing power to 3 increases (at least a bit) our predictive power here.
+
+But what about the other predictors?
+
+## ML approach to linear regression - methylation data
+
+As we add other predictors, it can be good to also add penalization terms.
+
+We will also add the possibility of interaction between terms.
+
+```{r}
+R = recipe( df_meth , Age ~ . ) %>%
+    step_normalize( all_numeric_predictors()) %>%
+    step_poly( all_numeric_predictors(), degree = tune() )
+    
+
+wf = workflow() %>% 
+    add_model( linear_reg( engine = 'glmnet', 
+                           mixture = tune(),
+                           penalty = tune() ) ) %>% 
+    add_recipe( R )
+
+
+degree_res <- 
+  wf %>% 
+  tune_grid(
+    resamples = vfold_cv(df_meth, v = 10),
+    grid = grid_regular( list( degree = degree_int( range = c(1,3) ),
+                               mixture = mixture(),
+                               penalty = penalty()
+                               ) , levels = c(3,11,20) )
+    )
+
+degree_res %>% show_best(metric = 'rmse')
+```
+
+```{r}
+best_model <- degree_res %>% select_best(metric = "rmse")
+best_model
+```
+
+```{r}
+final_wf <- wf %>% 
+    finalize_workflow(best_model) %>%
+    fit( df_meth )
+
+df_meth_a = augment( final_wf , df_meth )
+df_meth_test_a = augment( final_wf , df_meth_test )
+
+print(paste( "train - R2=",
+             rsq( df_meth_a , truth = Age , estimate = .pred  )$.estimate,
+             " - RMSE=",
+             rmse( df_meth_a , truth = Age , estimate = .pred  )$.estimate
+))
+print(paste( "test  - R2=",
+             rsq( df_meth_test_a , truth = Age , estimate = .pred  )$.estimate,
+             " - RMSE=",
+             rmse( df_meth_test_a , truth = Age , estimate = .pred  )$.estimate
+))
+```
+
+```{r}
+ggplot( rbind( df_meth_a %>% mutate( data = 'train' ),
+               df_meth_test_a %>% mutate( data = 'test' ) ),
+        aes( x = Age , y = .pred , col = data ) ) + 
+    geom_point( alpha = 0.8 ) + 
+    ylab( "prediction" ) + 
+    geom_abline( slope=1 , linetype='dashed')
+
+
+```
+
+```{r}
+VI = final_wf %>% 
+    extract_fit_parsnip() %>% 
+    vi(sign = TRUE) %>%
+    mutate(Variable = factor(Variable, levels = Variable))
+VI %>% ggplot( aes(x=Importance, y=Variable, fill=Sign) ) +
+    geom_col()
+```
+
+# KNN
+
+You can also use the KNN algorithm for regression. Again you get the K nearest neighbors of the point you want to predict but this time instead of a vote it does a local average of the neighbors value (again weighted or not by their distance to your query point).
+
+**micro-exercise:** complete the code below to train a KNN regressor model for the methylation data. Optimize the `n_neighbors` and `weights` hyper-parameters:
+
+```{r}
+R = recipe( df_meth , Age ~ . ) %>%
+    step_normalize( all_numeric_predictors()) %>%
+    step_poly( all_numeric_predictors(), degree = tune() )
+    
+
+wf = workflow() %>% 
+    add_model( ... ) %>%  ## add model
+    add_recipe( R )
+
+
+degree_res <- 
+  wf %>% 
+  tune_grid(
+    resamples = vfold_cv(df_meth, v = 10),
+    grid = grid_regular( ... ) ## add grid
+    )
+
+degree_res %>% show_best(metric = 'rmse')
+```
+
+------------------------------------------------------------------------
+
+So we see that the model we get from KKN is not bad at all **but** the interpretability is lacking in this model.
+
+> KNN regressor is not really good at predicting sparse neigborhoods (eg, the predictions for the extreme data points are not accurate).
+
+## Random Forest
+
+From the standpoint of tree, the only difference is that now, instead of the entropy or Gini criterion, **the decision which variable to use at any node is made using a regression metric**, such as squared error for example.
+
+For example, consider this example, adapted from the sklearn website:
+
+```{r}
+# Create a random dataset
+set.seed(1)
+X = runif(80, min=0 , max=pi*2)
+y = sin(X)*2
+y[ 1:10 ] = y[ 1:10 ] + rnorm(10)*5 # additional noise on some points
+
+train = data.frame(x=X,y=y)
+
+ggplot( train , aes( x=x,y=y ) ) + geom_point()
+```
+
+```{r}
+model1 = decision_tree(tree_depth = 2, cost_complexity = 0, mode = 'regression') %>% 
+    fit( y~x , train )
+model2 = decision_tree(tree_depth = 6, cost_complexity = 0, mode = 'regression') %>% 
+    fit( y~x , train )
+
+pred = data.frame( x = seq(0,pi*2,length.out=250) )
+pred$pred1 = (model1 %>% predict( pred ))$.pred
+pred$pred2 = (model2 %>% predict( pred ))$.pred
+
+ggplot( train , aes( x=x,y=y ) ) + 
+    geom_point( alpha = 0.5 ) + 
+    geom_line( data = pred , aes( x = x, y = pred1 ) , color = 'cornflowerblue' ) +
+    geom_line( data = pred , aes( x = x, y = pred2 ) , color = 'salmon' )
+```
+
+```{r}
+tree_obj <- extract_fit_engine(model1)
+
+rpart.plot(
+  tree_obj,
+  extra = 1
+)
+```
+
+Of course with a single tree you do not get very far, unless the tree becomes absolutely huge.
+
+But with a random forest you can aggregate the estimate from many trees to get somewhere nice.
+
+```{r}
+model3 = rand_forest(mode = 'regression') %>% 
+    fit( y~x , train )
+
+pred$pred3 = (model3 %>% predict( pred ))$.pred
+
+ggplot( train , aes( x=x,y=y ) ) + 
+    geom_point( alpha = 0.5 ) + 
+    geom_line( data = pred , aes( x = x, y = pred1 ) , color = 'cornflowerblue' ) +
+    geom_line( data = pred , aes( x = x, y = pred2 ) , color = 'salmon' ) + 
+    geom_line( data = pred , aes( x = x, y = pred3 ) , color = 'chartreuse3' )
+```
+
+Let's try on the methylation data:
+
+```{r}
+R = recipe( df_meth , Age ~ . ) 
+
+wf = workflow() %>% 
+    add_model( rand_forest( mode = 'regression', 
+                            min_n =  tune() 
+                            ) ) %>% 
+    add_recipe( R )
+
+RF_res <- 
+    wf %>% 
+    tune_grid(
+        resamples = vfold_cv(df_meth, v = 10),
+        grid = grid_random( min_n( range = c(5,100) ),
+                            size = 20 )
+    )
+
+RF_res %>% show_best(metric = 'rmse')
+```
+
+# Exercise
+
+We go back to the potato dataset we introduced in notebook 3.
+
+---
+
+**Note**: here the data has already been filtered to keep only the top 200 genes (that is still a lot, but manageable ). However often your data will have >10 000 genes, which would create issues in practice (more that just slowing down the training, some models will fail to find a good solution).
+
+solutions include:
+
+ * detecting genes with low variance and removing them (you can use [step_rm](https://recipes.tidymodels.org/reference/step_rm.html) to remove variables by name once you have decided which to remove)
+ * a preliminary PCA are your friend (use scores adapted to regression)
+
+Anyhow, end of the rent. As I said in this dataset you should be OK (although you could try a PCA if you are curious)
+
+---
+
+1.  split train and test
+2.  try linear regression (with different degrees if you wish)
+3.  random forest What do you learn about Flesh Color?
+
+```{r}
+file_metadata = "../data/potato_data.phenotypic.csv"
+file_data = "../data/potato_data.transcriptomic.top200norm.csv"
+
+df = read.csv( file_metadata , row.names=1 )
+dfTT = read.csv( file_data , row.names=1 )
+
+dfTT %>% head()
+```
+
+```{r}
+dfTT["Flesh.Colour"] = df[ row.names(dfTT), "Flesh.Colour"]
+dfTT$Flesh.Colour %>% summary()
+```
+
+```{r}
+## your code here
+```
+
+
+
+
+Solution in `solutions/solution_potato_reg.R`
+
+
+
+# Extra exercise
+
+You can attempt the same thing with the AML dataset we used in the unsupervised learning:
+
+```{r}
+df_aml = read.csv('../data/gene_drug_sens.csv' , row.names = 1)
+X_aml = df_aml %>% select( c('auc' , colnames(df_aml)[9:ncol(df_aml)] ) )
+X_aml %>% head()
+```
+
