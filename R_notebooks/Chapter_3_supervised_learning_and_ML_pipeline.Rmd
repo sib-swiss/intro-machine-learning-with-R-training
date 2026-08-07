@@ -545,6 +545,7 @@ print(paste("test set size:" ,nrow(X_test)))
 ```
 
 --- 
+
 Here comes the question : **"What should be my test-set size?"** 
 
 There is not a single clear-cut answer to this and it depends a lots on the nature of your data and the of the problem you want to solve.
