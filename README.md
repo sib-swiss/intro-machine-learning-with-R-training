@@ -10,7 +10,35 @@ The course is targeted to life scientists who are already familiar with the R pr
 
 In order to follow the course you need to have installed R and Rstudio.
 
-> **TODO** Libraries to install
+You will also need to have installed the following packages:
+
+**from CRAN** (install with `install.packages()`):
+ 
+ * BiocManager
+ * dendextend
+ * dplyr
+ * ggplot2
+ * GGally
+ * ggbiplot
+ * gplots
+ * gridExtra
+ * important
+ * pheatmap
+ * ranger
+ * RColorBrewer
+ * stringr
+ * tidyr
+ * tidymodels
+ * recipes
+ * rpart.plot
+ * themis
+ * vip
+ * umap
+
+**from Bioconductor** (install with `BiocManager::install`)
+
+ * bluster
+
 
 ## course organization
 
