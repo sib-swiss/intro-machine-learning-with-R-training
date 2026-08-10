@@ -1,0 +1,67 @@
+---
+title: "Introduction to Machine Learning with R - Exam"
+author: "Wandrille"
+date: "2026-08-10"
+output: html_document
+editor_options: 
+  markdown: 
+    wrap: sentence
+---
+
+# Exam - Introduction to Machine Learning
+
+The goal of this exam is perform an analysis on data related to heart disease.
+We would like to explore the relationship between a `target` variable - whether a patient has a heart disease or not - and several other variables such as cholesterol level, age, ...
+
+The dataset is stored in the file `'heartData_simplified.csv'`, which is a cleaned and simplified version of the [UCI heart disease data set](https://archive.ics.uci.edu/ml/datasets/heart+Disease)
+
+You should explore the dataset and answer the questions of the exam in a jupyter notebook, with comments explaining what you did.
+You should send your code to **wandrille.duchemin [at] unibas.ch**.
+
+## description of the columns
+
+-   age : Patient age in years
+-   sex : Patient sex
+-   chol : Cholesterol level in mg/dl.
+-   thalach : Maxium heart rate during the stress test
+-   oldpeak : Decrease of the ST segment during exercise according to the same one on rest.
+-   ca : Number of main blood vessels coloured by the radioactive dye. The number varies between 0 to 3.
+-   thal : Results of the blood flow observed via the radioactive dye.
+    -   defect -\> fixed defect (no blood flow in some part of the heart)
+    -   normal -\> normal blood flow
+    -   reversible -\> reversible defect (a blood flow is observed but it is not normal)
+-   target : Whether the patient has a heart disease or not
+
+**code to read the data**
+
+```{r}
+library(dplyr)
+
+df = read.csv( "heartData_simplified.csv" )
+df %>% head()
+```
+
+```{r}
+dim(df)
+```
+
+**Instructions**
+
+Your mission is to implement a machine learning pipeline in order to predict `target`.
+
+Try to choose a relevant approach regarding :
+
+-   the split of your data into train and test sets
+-   the metric you would like to optimize
+-   the preprocessing steps you want to take
+
+Try a logistic regression and a decision tree approach.
+
+-   Which one yields the best result here ?
+-   If you had to remove 3 features (*i.e.*, columns) out of this analysis, which ones would you choose ?
+-   Try to describe briefly (in 3 or 4 sentences) which insights your model gives you about the relationship between heart disease and the covariables.
+
+**important notes:**
+
+-   it is a good idea to start with some data exploration
+-   You can see that we have several categorical variables in the dataset: `sex` , `thal`, and our response variable : `target`. If taken as-is, these variables may create problems in ML models. So you will first need to transform them to sets numerical columns (there is a recipe step for this).
