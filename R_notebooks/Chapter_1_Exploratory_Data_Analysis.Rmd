@@ -30,16 +30,16 @@ Tidymodels is actually a collection of packages handling different facets of Mac
  * [yardstick](https://yardstick.tidymodels.org/): handles performance metrics
 
 
-We will introduce the main interfaces and behaviour of all these libraries, but you can expect to spend a bit of time in these websites documentation over the next two days, as well as during your ML work afterward.
+We will introduce the main interfaces and behaviour of all these libraries, but you can expect to spend a bit more time in their documentation over the next two days, as well as during your ML work afterward.
 
 
-## Data prepartion for ML
+## Data preparation for ML
 
-Before we do actual Machine Learning, it is always crucial to explore the data, as step commonly called Exploratory Data Analysis (EDA).
+Before we do actual Machine Learning, it is always crucial to explore the data, a step commonly called Exploratory Data Analysis (EDA).
 
-This step encompasses checking data format, cleaning the data, flagging eventual outliers, deciding on preprocessing options for your data, refining the hypothesis you will test with your models, ...
+This step encompasses checking data formatting, cleaning the data, flagging possible outliers, deciding on preprocessing options for your data, refining the hypothesis you will test with your models, ...
 
-EDA is very important and should not be neglected as it sets the stage for the rest of the analysis. In fact, you can sometimes spend 80% of your time on that step and a thorough EDA often makes the analysis much smoother down the line.
+EDA is very important and should not be neglected as it sets the stage for the rest of the analysis. In fact, you can sometimes spend 80% of your time on it! A thorough EDA often makes the analysis much smoother down the line.
 
 ---
 
@@ -47,7 +47,7 @@ In the context of tidymodels, this will also give us the possibility to start di
 
 ### First look at the data
 
-In this intoduction we are using a yeast Phospho proteomics dataset [Plank et al. MCP, 2020](https://doi.org/10.1074/mcp.RA120.001955). The study performed a LC-MS/MS experiment and label-free quantitation to study the effect of AGC-kinase (Sch9, Pka1, Ypk1) inhibition on the phosphoproteome. 5 yeast strains were used: WT, and Sch9, Pka1, Sch9&Pka1, Ypk1 mutant strains. Sch9, Pka1, Ypk1 were mutated in order to allow the 1NMPP1 molecule to bind to the mutant and inhibit its active site. DMSO was used as a control. All measurements were performed in 3 technical replicates.
+In this intoduction we are using a yeast Phospho-proteomics dataset [Plank et al. MCP, 2020](https://doi.org/10.1074/mcp.RA120.001955). The study performed a LC-MS/MS experiment and label-free quantitation to study the effect of AGC-kinase (Sch9, Pka1, Ypk1) inhibition on the phosphoproteome. 5 yeast strains were used: WT, and Sch9, Pka1, Sch9&Pka1, Ypk1 mutant strains. Sch9, Pka1, Ypk1 were mutated in order to allow the 1NMPP1 molecule to bind to the mutant <!--protein?--> and inhibit its active site. DMSO was used as a control. All measurements were performed in 3 technical replicates.
 
 
 ```{r}
@@ -58,16 +58,19 @@ df_ph %>% head()
 
 In Machine Learning (as in some other statistical fields), we often specify our data in terms of **X** and **y**
 
-**y** is the *target* or *response variable*, which is generally the thing we want to be able to predict or describe at the end of the analysis. **Not all analysis have a target.**
+**y**:
+
+* the *target* or *response variable*, which is generally the thing we want to be able to predict or describe at the end of the analysis. 
+* **Not all analyses have a target.**
 
 **X**:
 
  * contains all the variables that can be used to predict the target or describe the data
  * table: rows are observations, columns are variables (also called features)
 
-> NB: many biological field (eg. RNAseq) have the converse (rows are variables, columns are obervation). One has to be mindful of this and decide how best to conform the data to the libraries' expectations.
+> NB: packages from many biological fields (eg. RNA-seq) rotate the table (rows are variables, columns are obervations). One has to be mindful of this and decide how best to conform the data to the packages' expectations.
 
-In this analysis for the moment we just have **X**, which corresponds to columns 3 onward.
+In this analysis, **X** is part of the data.frame we just loaded (column 3 and onwards):
 
 ```{r}
 X_ph = df_ph[,3:ncol(df_ph)]
@@ -79,29 +82,27 @@ The columns of X_ph corresponds to different samples
 colnames( X_ph )
 ```
 
-We can see that some are technical replicates to one-another. 
+We can see that some are technical replicates of others. 
 If the experiment went well and the data is properly processed, we should expect the replicates to be similar to one another.
 
 Such **expectations can be quite useful in EDA and can guide our analysis**.
 
 
-Let's look at the reproducibility of the replicates using ggplot `ggpairs`:
+Let's look at the reproducibility of a few replicates using ggplot `ggpairs`:
 
 ```{r}
 ggpairs(X_ph, columns = 1:4 , aes( alpha = 0.5 ))
 ```
 
-The lower triangle part of the figure shows the relationship of values between two sampels determined by the row and column, while the upper triangle shows the linear correlation value between the two sample.
+The *lower triangle* part of the figure shows the relationship of values between two samples determined by the row and column, while the *upper triangle* shows the linear correlation value between the two samples. The *diagonal* shows a density plot of the values for the sample corresponding to the column.
 
-The diagonal shows a density plot of the sample corresponding to the column.
-
-The first 3 rows and columns are technical replicates of the condition WT_DMSO, the 4th row is another condition.
+The first 3 rows and columns are technical replicates of the condition WT_DMSO, the 4th row is from another condition.
 
 **Question:** what to you observe in this figure? Anything odd about the relationship between samples? about the data shape? about their values?
 
 ---
 
-This becomes more obvious if we look at less samples:
+This becomes more obvious if we look at fewer samples:
 
 ```{r}
 ggplot( X_ph , aes(x = WT_DMSO) ) + geom_density()
@@ -111,7 +112,7 @@ ggplot( X_ph , aes(x = WT_DMSO, y = WT_DMSO.1) ) + geom_point()
 ```
 ---
 
-We can address this observed pattern of heteroskedascticity by log-transforming the intensity values, which stabilizes the variance i.e. the scatter or variance will be constant or depend less on the values. This is a desirable feature which makes subsequent data analysis (e.g. t-tests) easier.
+We can address this observed pattern of heteroskedasticity <!--You might need to explain what you mean by heteroskedasticity in this context, ie not "different variances in different groups" which is what most biologists will be familiar with, but "variance depends on the mean". --> by log-transforming the intensity values, which stabilizes the variance, i.e. the scatter or variance will be constant or depend less on the values. This is a desirable feature which makes subsequent data analysis (e.g. t-tests) easier.
 
 ```{r}
 ggplot( X_ph , aes(x = WT_DMSO) ) + geom_density() + scale_x_log10() 
@@ -123,21 +124,24 @@ ggplot( X_ph , aes(x = WT_DMSO, y = WT_DMSO.1) ) +
     scale_x_log10() + scale_y_log10() 
 ```
 
+<!-- Comment on transformed plot? -->
+
 ### Value transformation and variance stabilization
 
 We will transform the data from $x$ to $log(x+1)$.
 
-The $+1$ is here to avoid numerical issues with 0 values in the data. 
-Note that with this transformation 0 stay 0 ( $log(0+1) = log(1) = 0$ )
+The $+1$ <!--('offset', sometimes called a 'pseudocount' in other fields)?--> is here to avoid numerical issues with 0 values in the data. 
+Note that with this transformation, 0 stays 0 ( $log(0+1) = log(1) = 0$ ).
 
 
-We could do this transform manually, with something like 
+We could do this transform manually, with something like:
 
 ```r
 X_ph = log10( X_ph + 1)
 ```
 
-But, let's start to put some element of tidymodels in place and make a recipe:
+<!-- TBD: presentation here a little confusing, and it isn't immediately clear WHY we're using this instead of something more standard (aside from "good practice"). -->
+But, let's start to put some elements of tidymodels in place and make a recipe:
 
 ```{r}
 phospho_recipe = recipe( formula = ~. , data = X_ph ) %>%  
