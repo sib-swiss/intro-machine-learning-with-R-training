@@ -157,7 +157,7 @@ Once the recipe is created we use:
 
  * `prep`: fits the different recipe steps with the data (here not useful but still necessary) 
  * `bake`: transforms the data, or new data using the recipe
- 
+
 ```{r}
 phospho_recipe = phospho_recipe %>% prep()
 
@@ -165,6 +165,8 @@ X_ph_transformed = phospho_recipe %>% bake( X_ph )
 
 ggpairs(X_ph_transformed , columns = 1:4 , aes( alpha = 0.5 ))
 ```
+
+<!-- WARNING TBD: rownames are lost in a tibble -->
 
 The scatter of the points does not seem to depend anymore on the log-intensity value. The log-intensities are more evenly distributed compared to the raw intensities.
 
@@ -178,14 +180,14 @@ Missing values are a common occurrence in many fields, and we need to account fo
  * many ML algorithms cannot handle missing values (eg, linear models, PCA, ...)
  * ...
 
-Depending on the nature of the data, they could be missing for different reasons and the way that we handle them would be different.
-Without going too deep on the topic, handling missing values is guided by a mixture of topic-expertise (ie, using best practices approaches in the field) and data-driven or objective-driven approaches (more on this later).
+Depending on the nature of the data, they could be missing for different reasons, and the way that we handle them would be different.
+Without going too deep into the topic, handling missing values is guided by a mixture of expertise (ie, using field best practices) and data-driven or objective-driven approaches (more on this later).
 
-For our case, missing values are common in proteomics data. They are caused among others by the limited sensitivity of the mass spectrometers or inaccuracies in the computational data processing.
+For our case, missing values are common in proteomics data. They are caused by the limited sensitivity of the mass spectrometers or inaccuracies in the computational data processing, amongst other reasons.
 
 ---
 
-In the data they can be represented in many way, commonly as `NA`, but also `0`, an empty string, ... It is also part of EDA to scan the data to learn how the missing values may have been encoded.
+In the data itself, they can be represented in many ways, commonly as `NA`, but also as `0`, an empty string,... It is also part of EDA to scan the data to learn how the missing values may have been encoded.
 
 In this dataset, they are represented by 0.
 
@@ -193,17 +195,18 @@ In this dataset, they are represented by 0.
 In order to get a better look at missing values in the entire dataset, we can plot the data as a heatmap:
 
 ```{r}
-heatmap( (X_ph_transformed==0)*1 ,# %>% as.matrix() , 
-        Rowv = NA, Colv = NA,
-        scale = 'none' ,
-        col = 
-         )
+heatmap( 
+  (X_ph_transformed==0)*1 ,
+  Rowv = NA, Colv = NA, # no row/col reordering
+  labRow = NA,          # don't show row names
+  scale = 'none' ,      # no auto scaling
+  margins = c(8.5, 3)   # spacing for labels
+)
 ```
 
 This shows that the missing or zero values (dark elements) are ubiquitous. 
 
-The missing values are not randomly distributed but more likely for low intensity peptides: the average peptide intensity decreases with increasing number of missing values per peptide. 
-
+Do the missing values occur more often at low intensities? This would indicate we're hitting the lower detection limit.
 
 ```{r}
 sums = rowSums( X_ph_transformed )
@@ -218,6 +221,8 @@ ggplot( NULL , aes( x = avg_without_missing , y = nr_missing ) ) +
 
 ```
 
+=> Indeed, the missing values are not randomly distributed but more likely for low intensity peptides: the average peptide intensity decreases with increasing number of missing values per peptide. 
+
 
 ```{r}
 hist(nr_missing, 
@@ -226,9 +231,9 @@ hist(nr_missing,
      xlab = "# missing values per peptide")
 ```
 
-They are many ways to deal with missing values. The simplest strategies are just to remove all peptides that contain a missing value or to impute a mean value for all zero values.
+They are many ways to deal with missing values. The simplest strategies are just to remove all peptides that contain a missing value, or to impute a mean value for all zero values.
 
-Most of the peptides have zero missing values so **discarding all peptides with missing values** means throwing away some data, but it is a feasible strategy for these data. 
+Here, a noticeable amount of peptides have at least one missing value, so **discarding all peptides with missing values** means throwing away some data, but it is a feasible strategy for this dataset. 
 
 
 ```{r}
@@ -243,7 +248,7 @@ X_ph_positive %>% head()
 
 > **NB:** in `step_naomit` we have to set `skip=FALSE` so row may actually be removed when calling `bake`.
 
-Another missing value strategy would be to impute all zero values with the mean of all positive values. 
+Another missing value strategy would be to impute all zero values with the mean of all non-zero values; this can be done by peptide, by sample, or both. More advanced imputation strategies also exist.
 
 
 ```{r}
@@ -262,24 +267,26 @@ It is thus important to **evaluate the effect this operation has in order to be 
 Here, we can look at the correlation between samples, under our assumption that technical replicates should be similar
 
 
-```{r}
+```{r fig.width=5, fig.height=5}
 heatmap.2( cor( X_ph ) , 
            col=viridisLite::plasma(50), breaks = seq(0,1,length.out=51 ),
            Rowv = FALSE , Colv = FALSE, 
            density.info="none", trace="none",
-           main = "raw data")
+           main = "raw data",
+           margins = c(9,9))
 ```
-```{r}
+```{r fig.width=5, fig.height=5}
 heatmap.2( cor( X_ph_positive ) , 
            col=viridisLite::plasma(50), breaks = seq(0,1,length.out=51 ),
            Rowv = FALSE , Colv = FALSE, 
            density.info="none", trace="none",
-           main = "removed NAs")
+           main = "removed NAs",
+           margins = c(9,9))
 ```
 
 We see that the replicates of the same mutant strain correlate and the mutant strain has a stronger effect than the treatment (1NMPP1 or DMSO), but removing missing values in this case clearly improves the correlation between treatments! 
 
-**Micro exercise** : vizualize the correlation between samples on the data imputed with the column mean. Which strategy seems preferable in that particular case?
+**Micro exercise** : vizualize the correlation between samples on the data imputed with the column mean. Which strategy now seems preferable?
 
 
 ```{r}
@@ -295,6 +302,7 @@ For more imputation techniques check : [recipes impute steps imputation](https:/
 
 ### Making sure columns are the right type
 
+<!-- TBD: this should probably be done BEFORE imputation, as imputation depends on it -->
 
 ```{r}
 str(df_ph)
