@@ -777,7 +777,7 @@ ggpairs(X_aml, columns = 2:6 , aes( alpha = 0.5 , col = auc<200 ))
 
 **You can presume that the missing values, transformation, and data normalization for the gene expression have already been handled.**
 
-**Instruction:** Perfom a PCA on the gene expression data. Choose an interesting number of dimensions and interpret the plot : 
+**Instruction:** Perform a PCA on the gene expression data. Choose an interesting number of dimensions and interpret the plot : 
  * What does the first component seem to correspond to? 
  * What are driving genes behind the first component? 
 
