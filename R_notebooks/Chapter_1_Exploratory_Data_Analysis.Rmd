@@ -113,7 +113,7 @@ ggplot( X_ph , aes(x = WT_DMSO, y = WT_DMSO.1) ) + geom_point()
 
 ---
 
-We can address this observed pattern of heteroskedasticity <!--You might need to explain what you mean by heteroskedasticity in this context, ie not "different variances in different groups" which is what most biologists will be familiar with, but "variance depends on the mean". --> by log-transforming the intensity values, which stabilizes the variance, i.e. the scatter or variance will be constant or depend less on the values. This is a desirable feature which makes subsequent data analysis (e.g. t-tests) easier.
+We can address this observed pattern of heteroskedasticity by log-transforming the intensity values, which stabilizes the variance, i.e. the scatter or variance will be constant or depend less on the values. This is a desirable feature which makes subsequent data analysis (e.g. t-tests) easier.
 
 ```{r}
 ggplot( X_ph , aes(x = WT_DMSO) ) + geom_density() + scale_x_log10() 
@@ -125,7 +125,7 @@ ggplot( X_ph , aes(x = WT_DMSO, y = WT_DMSO.1) ) +
     scale_x_log10() + scale_y_log10() 
 ```
 
-<!-- Comment on transformed plot? -->
+
 
 ### Value transformation and variance stabilization
 
@@ -137,11 +137,10 @@ Note that with this transformation, 0 stays 0 ( $log(0+1) = log(1) = 0$ ).
 
 We could do this transform manually, with something like:
 
-```r
+```{r}
 X_ph = log10( X_ph + 1)
 ```
-
-<!-- TBD: presentation here a little confusing, and it isn't immediately clear WHY we're using this instead of something more standard (aside from "good practice"). -->
+ 
 But, let's start to put some elements of tidymodels in place and make a recipe:
 
 ```{r}
@@ -167,7 +166,6 @@ X_ph_transformed = phospho_recipe %>% bake( X_ph )
 ggpairs(X_ph_transformed , columns = 1:4 , aes( alpha = 0.5 ))
 ```
 
-<!-- WARNING TBD: rownames are lost in a tibble -->
 
 The scatter of the points does not seem to depend anymore on the log-intensity value. The log-intensities are more evenly distributed compared to the raw intensities.
 
@@ -311,7 +309,7 @@ str(df_ph)
 
 It is a good idea to check the data type type of your data frame values and check whether they have the correct type. Here, the types are correct, but if you wanted to change them you could do so in the dataframe directly, e.g.:
 
-```r
+```{r}
 df_ph$WT_DMSO = as.numeric( df_ph$WT_DMSO )
 ```
 
@@ -351,8 +349,6 @@ Dimensionality reduction serves two purposes:
 
  * **Visualization**: reducing the number of dimensions to 2 or 3 allows displaying the whole dataset for visual inspection.
  * **Data compression**: some features may not be very informative, and projecting feature vectors to a principal data manifold discards the uninformative part of the feature space.
- 
-<!-- perhaps use a simpler term, eg reduced space? -->
 
 
 ### Principal Component Analysis (PCA)
@@ -372,14 +368,12 @@ $\pmb{X}$ must be centered around the mean value of each feature vector (each co
 ![PCA illustration](../images/PCA.png)
 
 The output of such a process is a set of eigenvectors or PCs (which are a linear combination of your former features) and the variance corresponding to each eigenvector (eigenvalues). The eigenvalues are in decreasing order of explained overall variance. 
-<!-- TBD: Seems a bit redundant with previous -->
 
 In tidymodel we can use [step_pca](https://recipes.tidymodels.org/reference/step_pca.html) as a recipe step. By default it computes only the first 5 PCs, but this can be changed easily via an option.
 
 
 
 PCA analysis has a clear mathematical framework and is fast to calculate (compared to t-SNE, for example). It can be easily applied to distributed data and is therefore also attractive for very large datasets. 
-<!-- TBD: Last sentence seems a bit oversimplified. -->
 
 
 ### PCA on the phospho peptide dataset
@@ -437,8 +431,6 @@ tidy( phospho_PCA_recipe , number = 6 , type = 'coef' ) %>%
 ```
 
 
-<!-- TBD: Erm, this looks like a PCA on the transposed data matrix...? -->
-
 ```{r}
 X_pca %>% head()
 ```
@@ -464,7 +456,7 @@ ggplot( NULL, aes( x = X_pca$PC01 , y = pept_intens  )  ) +
     ylab( 'peptide intensity' )
 ```
 
-<!-- Proposal: this is known as a "size effect". -->
+<!-- Note: this is known as a "size effect". -->
 
 Indeed, here we have normalized by column, as is classical in Machine Learning but that is not appropriate for this kind of data.
 
@@ -532,7 +524,6 @@ We see now that the Ypk1 mutants cluster together and 1NMPP1 treatments are dist
 
 ### PCA on the immunogenicity dataset 
 
-<!-- TBD: Strange to introduce the dataset here -->
 The second dataset we would like to use is taken from a publication by [Stronen et al., Science, 2016](https://science.sciencemag.org/content/352/6291/1337) in the field of cancer immunology. It measured the immunogenic potential of peptides carrying somatic mutations by testing whether they induce a CD8+ T cell response in a healthy donor. 
 
 There are 3 different outcomes of the "CD8+ T cell response induced in healthy donor: Tested/Observed” feature: 
@@ -608,7 +599,6 @@ ggbiplot(prcomp_obj,
          )
 
 ```
-<!-- TBD: Same issue -->
 
 Alternative visualization with ellipses for the groups:
 
@@ -634,9 +624,9 @@ We see that the CD8 positive mutated peptides (red dots) are predominantly found
 PCA is nice but, as it is a linear transform, it will often fail to capture interesting non-linear patterns in complex data.
 
 This is where UMAP ([McInnes et al.,arxiv, 2018](https://arxiv.org/abs/1802.03426)) comes in, which you probably know from single cell RNA-seq papers. It is similar to t-SNE, but differs in some important details, which make it faster, applicable to more than 2 dimensions, and preserve the global structure better.
-<!-- tSNE can run on more than 2 dimensions; not that youd want it to... -->
+<!-- Note: tSNE can run on more than 2 dimensions (or even just one); not that you'd want it to... -->
 
-### mathematical explaination of UMAP
+### mathematical explanation of UMAP
 
 UMAP assumes a exponential weight between the high dimensional data points <!--Brutal! But is this level of algorithmic detail necessary? -->: 
 
@@ -670,7 +660,6 @@ UMAP implements an efficient nearest neighbor search and has an overall complexi
 
 Some of the important parameters for UMAP are:
 
-<!-- Proposal: * What data is used as input. Can be the data matrix, but it is common to start from principal components (reduced noise and dimensionality). -->
  * `n_components`: dimension of the embedding
  * `n_neighbors`: number of nearest neighbors to consider (corresponds to $n$ in the text)
  * `min_dist`: points in embedded space need to be separated by a distance of at least 'min_dist'
