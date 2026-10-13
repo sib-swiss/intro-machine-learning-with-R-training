@@ -22,6 +22,8 @@ library(stringr)
 
 ## immunogenicity dataset
 
+Same data & preparation code as before.
+
 ```{r}
 df_im = read.csv('../data/aaf2288-Table-S8.csv')
 
@@ -64,6 +66,8 @@ im_umap = umap( df_im_pca %>% select(starts_with("PC")) ,
 
 ## iris dataset
 
+The well-known "iris" dataset that comes within base R, with 4 different floral measurements for 3 species of iris.
+
 ```{r}
 data(iris)
 iris %>% head()
@@ -103,10 +107,10 @@ Clustering is an unsupervised method that serves many purposes:
   * ...
 
 
-If you find some cluster-like structures in your data and if they correspond to one of your hypothesis then you already came a long way. 
+If you find some cluster-like structures in your data that correspond to one of your hypotheses then you're on a good track! 
 Often you need to carefully clean and normalize your data to discover these structures. 
 
-Be aware that clustering algorithms are not magical techniques that give you a straight answer: you will need to find good hyperparameters for the model to work, and your expertise and understanding of the data is crutial to obtain good results.
+Be aware that clustering algorithms are not magical techniques that give you a straight answer: you will need to find good hyperparameters for the model to work, and your expertise and understanding of the data is crucial to obtain good results.
 
 More-over, you will see that the concept of **cluster** itself can have changing definition depending on the data and objective.
 
