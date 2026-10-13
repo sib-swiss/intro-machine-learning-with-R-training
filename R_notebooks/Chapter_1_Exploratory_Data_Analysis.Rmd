@@ -308,13 +308,13 @@ For more imputation techniques check : [recipes impute steps imputation](https:/
 str(df_ph)
 ```
 
-It is a good idea to check the data type type of your data frame values and check whether they have the correct type. Here the types are correct, but if you wanted to change them you could do so in the dataframe directly:
+It is a good idea to check the data type type of your data frame values and check whether they have the correct type. Here, the types are correct, but if you wanted to change them you could do so in the dataframe directly, e.g.:
 
 ```r
 df_ph$WT_DMSO = as.numeric( df_ph$WT_DMSO )
 ```
 
-There also exists useful recipe steps, for example to [discretize continuous variables](https://recipes.tidymodels.org/reference/discretize.html?q=convert#null), or make a [factor out of a binary variable](https://recipes.tidymodels.org/reference/step_bin2factor.html), ...
+There are many useful recipe steps, for example to [discretize continuous variables](https://recipes.tidymodels.org/reference/discretize.html?q=convert#null), or make a [factor out of a binary variable](https://recipes.tidymodels.org/reference/step_bin2factor.html), ...
 
 ### One hot encoding of categorical data 
 
@@ -346,37 +346,42 @@ recipe( df , ~. ) %>%
 
 ## Dimensionality reduction
 
-Dimensionality reduction serves two puposes
+Dimensionality reduction serves two purposes:
 
- * **Visualization**: reducing the number of dimensions to 2 or 3 allows displaying the whole dataset for visual inspection
- * **Data compression**: some features may be little informative and projecting feature vectors to the principal data manifold allows discarding the uninformative part of the feature space
+ * **Visualization**: reducing the number of dimensions to 2 or 3 allows displaying the whole dataset for visual inspection.
+ * **Data compression**: some features may not be very informative, and projecting feature vectors to a principal data manifold discards the uninformative part of the feature space.
+ 
+<!-- perhaps use a simpler term, eg reduced space? -->
 
 
 ### Principal Component Analysis (PCA)
 
-PCA finds the direction in feature space with the largest variance (first principal component), meaning the direction where the data points are most spread out. Then it repeats the same algorithm to find the direction orthogonal to the first principal component (second principal component) with the largest (remaining) variance. The second principal component can only give information about the variance not explained by the first component. Mathematically this boils down to the eigenvalue decomposition or diagonalization of the covariance matrix, where the eigenvalue is the variance of the data along its eigenvector (principal component).
+PCA finds the direction in feature space with the largest variance (first principal component), meaning the direction where the data points are most spread out. Then it repeats the same algorithm to find the direction orthogonal to the first principal component with the largest (remaining) variance (second principal component). The second principal component can only give information about the variance not explained by the first component. Mathematically this boils down to the eigenvalue decomposition or diagonalization of the covariance matrix, where the eigenvalue is the variance of the data along its eigenvector (principal component).
 
-In PCA are looking for the matrix of eigenvalues $\pmb{D}$ and orthogonal basis vectors (eigenvectors) $\pmb{W}$, that satisfies the following relation:
+PCA determines the matrix of eigenvalues $\pmb{D}$ and orthogonal basis vectors (eigenvectors) $\pmb{W}$, that satisfy the following relation:
 
 $\pmb{X}^T\pmb{X}=\pmb{W}\pmb{D}\pmb{W}^T$
 
 $\pmb{X}$ must be centered around the mean value of each feature vector (each column in the dataframe has zero empirical mean), so that $\pmb{Q}=\pmb{X}^T\pmb{X}$ is the covariance matrix of your multidimensional data (zero centering is done by the PCA algorithm, so no need to do it yourself).
 
+<!-- Note: You do not necessarily have to center a PCA - but it changes the interpretation: PC1 will typically just be the vector from the origin to the barycentre. -->
+
 > Note: algorithms that perfom PCA generally use Singular Value Decomposition (SVD). 
 
 ![PCA illustration](../images/PCA.png)
 
-The output of such a process is a set of eigenvectors or PCs (which are a linear combination of your former features) and the variance corresponding to each eigenvector (eigenvalues). The eigenvalues are in decreasiung order to give us their decreasing signficance to explain the overall variance. 
+The output of such a process is a set of eigenvectors or PCs (which are a linear combination of your former features) and the variance corresponding to each eigenvector (eigenvalues). The eigenvalues are in decreasing order of explained overall variance. 
+<!-- TBD: Seems a bit redundant with previous -->
 
-In tidymodel we can use [step_pca](https://recipes.tidymodels.org/reference/step_pca.html) as a recipe step. By default computes only the first 5 PC axes but this can be changed easily via an option.
+In tidymodel we can use [step_pca](https://recipes.tidymodels.org/reference/step_pca.html) as a recipe step. By default it computes only the first 5 PCs, but this can be changed easily via an option.
 
 
 
 PCA analysis has a clear mathematical framework and is fast to calculate (compared to t-SNE, for example). It can be easily applied to distributed data and is therefore also attractive for very large datasets. 
+<!-- TBD: Last sentence seems a bit oversimplified. -->
+
 
 ### PCA on the phospho peptide dataset
-
-
 ```{r}
 phospho_PCA_recipe = recipe( formula = ~. , data = X_ph ) %>%  
     step_log( all_numeric_predictors(), 
@@ -418,7 +423,7 @@ tidy( phospho_PCA_recipe , number = 6 , type = 'variance' ) %>%
 ```
 
 
-With `type='coef'` we get a table with the contribution of each original variable to the PC axes (more on this later).
+With `type='coef'`, we get a table with the contribution of each original variable to the PC axes (more on this later).
 
 ```{r}
 tidy( phospho_PCA_recipe , number = 6 , type = 'coef' )
@@ -429,6 +434,9 @@ tidy( phospho_PCA_recipe , number = 6 , type = 'coef' ) %>%
     geom_tile() + 
     scale_fill_gradient2(low="blue", mid='white', high="red", midpoint = 0) 
 ```
+
+
+<!-- TBD: Erm, this looks like a PCA on the transposed data matrix...? -->
 
 ```{r}
 X_pca %>% head()
@@ -454,6 +462,8 @@ ggplot( NULL, aes( x = X_pca$PC01 , y = pept_intens  )  ) +
     xlab( 'PC01' ) +
     ylab( 'peptide intensity' )
 ```
+
+<!-- Proposal: this is known as a "size effect". -->
 
 Indeed, here we have normalized by column, as is classical in Machine Learning but that is not appropriate for this kind of data.
 
@@ -487,9 +497,10 @@ tidy( phospho_PCA_recipe , number = 6 , type = 'variance' ) %>%
 
 We see that the variance along the first PC is now reduced to ~34%, which is a good sign.
 
-> **remark**: This approach is closer to what would usually be used to normalize proteomics data. see [MsnBase normalize](https://rdrr.io/bioc/MSnbase/man/normalise-methods.html) for example.
+> **remark**: This approach is closer to usual proteomics data analysis. see [MsnBase normalize](https://rdrr.io/bioc/MSnbase/man/normalise-methods.html) for example.
 
 > **remark2**: Why then bother with the recipe and not just use the external library? The main reason why is that **recipes lead to a tidier integration in cross-validation procedures down the line**. But, it is true that in practice we will often mix approaches (at the expanse of having to write custom code to plug everything together).
+<!-- As discussed, this point could perhaps be made earlier? -->
 
 ```{r}
 tidy( phospho_PCA_recipe , number = 6 , type = 'coef' ) %>%
@@ -520,6 +531,7 @@ We see now that the Ypk1 mutants cluster together and 1NMPP1 treatments are dist
 
 ### PCA on the immunogenicity dataset 
 
+<!-- TBD: Strange to introduce the dataset here -->
 The second dataset we would like to use is taken from a publication by [Stronen et al., Science, 2016](https://science.sciencemag.org/content/352/6291/1337) in the field of cancer immunology. It measured the immunogenic potential of peptides carrying somatic mutations by testing whether they induce a CD8+ T cell response in a healthy donor. 
 
 There are 3 different outcomes of the "CD8+ T cell response induced in healthy donor: Tested/Observed” feature: 
@@ -595,6 +607,8 @@ ggbiplot(prcomp_obj,
          )
 
 ```
+<!-- TBD: Same issue -->
+
 Alternative visualization with ellipses for the groups:
 
 ```{r}
@@ -616,25 +630,26 @@ We see that the CD8 positive mutated peptides (red dots) are predominantly found
 
 ## UMAP
 
-PCA is nice but as it is a linear transform it will often fail to capture interesting non-linear pattern in complex data.
+PCA is nice but, as it is a linear transform, it will often fail to capture interesting non-linear patterns in complex data.
 
-There comes UMAP ([McInnes et al.,arxiv, 2018](https://arxiv.org/abs/1802.03426)), which you probably know from single cell RNA-seq papers. It is similar to t-SNE, but differs in some important details, which make it faster, applicable to more than 2 dimensions and preserve the global structure better. Here is how it works:
+This is where UMAP ([McInnes et al.,arxiv, 2018](https://arxiv.org/abs/1802.03426)) comes in, which you probably know from single cell RNA-seq papers. It is similar to t-SNE, but differs in some important details, which make it faster, applicable to more than 2 dimensions, and preserve the global structure better.
+<!-- tSNE can run on more than 2 dimensions; not that youd want it to... -->
 
 ### mathematical explaination of UMAP
 
-UMAP assumes a exponential weight between the high dimensional data points: 
+UMAP assumes a exponential weight between the high dimensional data points <!--Brutal! But is this level of algorithmic detail necessary? -->: 
 
 $\mu_{ij}=e^{-\frac{d(x_{i},x_{j})-\rho_i}{\sigma_i}}$
 
-$\rho_i$ is the distance $d(x_{i},x_{k})$ of $x_{i}$ to its nearest neighbor $x_{k}$. Let $NN(i,n)$ be the set of $n$ nearest neighbors of $x_i$. $sigma_i$ is chosen such that $\sum_{k \in NN(i,n)}\mu_{ik} = log_2(n)$. In contrast to t-SNE the weights are not normalized, which saves computation time.
+$\rho_i$ is the distance $d(x_{i},x_{k})$ of $x_{i}$ to its nearest neighbor $x_{k}$. Let $NN(i,n)$ be the set of $n$ nearest neighbors of $x_i$. $sigma_i$ is chosen such that $\sum_{k \in NN(i,n)}\mu_{ik} = log_2(n)$. In contrast to t-SNE, the weights are not normalized, which saves computation time. <!-- At what cost? -->
 
-Next the weights $mu_{ij}$ are turned into a weighted adjacency matrix and spectral clustering is used to find an initial embedding of the data points in the low dimensional space.
+Next, the weights $mu_{ij}$ are turned into a weighted adjacency matrix and spectral clustering is used to find an initial embedding of the data points in a lower dimensional space.
 
-For the representation in the low dimensional space, UMAP uses a heavy tailed weight:
+For the representation in the low dimensional space, UMAP uses a heavy-tailed weight:
 
 $\nu_{ij} = (1 + a(|x_i − x_j|_2^2)^b)^{−1}$
 
-UMAP determines the parameters $a$ and $b$ by a least square fitting procedure. As a similarity measure between the $\mu_{ij}$ and $\nu_{ij}$ distributions it uses:
+UMAP determines the parameters $a$ and $b$ by a least squares fitting procedure. As a similarity measure between the $\mu_{ij}$ and $\nu_{ij}$ distributions it uses:
 
 $C=-\sum_{i}\sum_{j}[\mu_{ij}log(\nu_{ij}) + (1-\mu_{ij})log(1-\nu_{ij})]$
 
