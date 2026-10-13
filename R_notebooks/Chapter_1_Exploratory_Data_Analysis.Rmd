@@ -110,6 +110,7 @@ ggplot( X_ph , aes(x = WT_DMSO) ) + geom_density()
 ```{r}
 ggplot( X_ph , aes(x = WT_DMSO, y = WT_DMSO.1) ) + geom_point()
 ```
+
 ---
 
 We can address this observed pattern of heteroskedasticity <!--You might need to explain what you mean by heteroskedasticity in this context, ie not "different variances in different groups" which is what most biologists will be familiar with, but "variance depends on the mean". --> by log-transforming the intensity values, which stabilizes the variance, i.e. the scatter or variance will be constant or depend less on the values. This is a desirable feature which makes subsequent data analysis (e.g. t-tests) easier.
