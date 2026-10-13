@@ -117,29 +117,29 @@ More-over, you will see that the concept of **cluster** itself can have changing
 
 ## K-means clustering
 
-The [K-means](https://rdrr.io/r/stats/kmeans.html) algorithm is a widely used clustering algorithm. 
+### basics
+The [K-means](https://rdrr.io/r/stats/kmeans.html) algorithm is a widely-used clustering algorithm. 
 
 
 [Allison Horst K-mean visual explaination](https://allisonhorst.com/k-means-clustering)
 
-The K-means algorithm aims at finding the right partition of the data ($\pmb{X_1},...,\pmb{X_n}$) into $K$ clusters $\pmb{C}={C_1,...,C_K}$ so that the within cluster sum of squares (inertia) is minimized:
+The K-means algorithm aims to find a partition of the data ($\pmb{X_1},...,\pmb{X_n}$) into $K$ clusters $\pmb{C}={C_1,...,C_K}$ so that the within-cluster sum of squares (inertia) is minimized:
 
 $\pmb{C}=argmin_{\pmb{C}} \sum_{k=1}^{K}\sum_{i \in C_k}||\pmb{X_i}-\pmb{\mu_k}||^2$
 
 $\pmb{\mu_k}=\frac{1}{|C_k|}\sum_{i \in C_k}\pmb{X_i}$
 
-K-means requires the number of clusters as input. The greedy algorithm consists of 3 main parts:
+K-means requires K, a given number of clusters, as parameter. 
 
- 1. Choose $K$ points from $\pmb{X_i}$ as initial values for $\pmb{\mu_k}$. These initial points should be spread out over the dataset
- 2. Compute the centroids $\pmb{\mu_k}=\frac{1}{|C_k|}\sum_{i \in C_k}\pmb{X_i}$
- 3. Assignment step: assign each $\pmb{X_i}$ to a cluster $C_k=argmin_{C_k} ||\pmb{X_i}-\pmb{\mu_k}||^2$
- 4. Update step: recalculate $\pmb{\mu_k}=\frac{1}{|C_k|}\sum_{i \in C_k}\pmb{X_i}$
- 5. Iterate steps 3 & 4 until convergence
+The algorithm consists of 2 main steps:
 
-
-
+ 1. *Initialise*: Choose $K$ points from $\pmb{X_i}$ as initial values for $\pmb{\mu_k}$. These initial points should be spread out over the dataset.
+ 2a. *Update step*: compute the centroids $\pmb{\mu_k}=\frac{1}{|C_k|}\sum_{i \in C_k}\pmb{X_i}$
+ 2b. *Assignment step*: assign each $\pmb{X_i}$ to a cluster $C_k=argmin_{C_k} ||\pmb{X_i}-\pmb{\mu_k}||^2$
+ 3. *Iterate*: Iterate *update* & *assignment* steps until convergence
 
 
+### example on iris
 ```{r}
 iris_km = kmeans( iris_pca %>% select(starts_with("PC")) , centers = 3 )
 iris_km
@@ -166,8 +166,9 @@ table( iris$Species , iris_km$cluster )
 ```
 
 
-K-means is a greedy algorithm, i.e. it will only find a local minimum of the inertia. 
-Therefore it is good practice to run the algorithm several times with different initialization.
+### initialisations
+K-means is a "greedy" algorithm, i.e. it will only find a local minimum of the inertia at each step. 
+It is therefore good practice to run the algorithm several times with different initializations.
 
 In R, the [Kmeans implementation](https://rdrr.io/r/stats/kmeans.html) uses a `nstart` parameter to launch the algorithm with different initializations (the default is 1).
 
@@ -183,6 +184,8 @@ ggplot(iris_pca , aes( x=PC1 , y=PC2 ,
 For this simple dataset, this is unlikely to matter much, but it is nevertheless good practice to have several starts.
 
 
+### considerations
+
 **Important remarks:**
 
  - KMeans is based on a concept of distances : your **data needs to be properly scaled**
@@ -190,8 +193,7 @@ For this simple dataset, this is unlikely to matter much, but it is nevertheless
  - KMeans results depends on parameter **K**
 
 
-What values should we give to parameter K?
-
+#### What values should we give to parameter K?
 
 ```{r}
 iris_pca %>% 
@@ -212,17 +214,17 @@ iris_pca %>%
 
 ```
 
-We see that the number of clusters defines the k-means clustering outcome. It is difficult to say by looking at the t-SNE projections, whether 2 or 3 clusters better reveal underlying patterns of the data. 
+We see that the number of clusters defines the k-means clustering outcome. It is difficult to say, looking at the projections, whether 2 or 3 clusters better reveal underlying patterns of the data. 
 
-There, we can compare the clustering proposed by different values of K with some of the clustering quality metrics.
+To help us choose, we can compare the clusterings proposed by different values of K using clustering quality metrics.
  
 ---
 
 ### Adjusted Rand Index
 
-> For the metrics, we turn to the [bluster](https://www.bioconductor.org/packages/release/bioc/html/bluster.html) packages which offers good diagnostic and wrapper functions for clustering.
+> For the metrics, we turn to the [bluster](https://www.bioconductor.org/packages/release/bioc/html/bluster.html) package which offers good diagnostics and wrapper functions for clustering.
 
-In one case, we could **use known categories**, like the species for the iris example, when they exists AND when we think they should form meaningful clusters.
+In one case, we could **use known categories**, like the species for the iris example, when they a) exist AND b) we think they should form meaningful clusters.
 
 An eample of such metric is the **Adjusted Rand Index** (ARI) which computes the similarity between two cluster assignments.
 
@@ -255,7 +257,7 @@ print(paste( "             ARI:", pairwiseRand(labels_true, labels_pred, mode= '
 
 ### Silhouette score
 
-Another way, in the more common case where we do not know the categories in advances would be to use some metric which **computes how each cluster is cohesive and well separated from the others**.
+In the more common case, where we do not know the categories in advance, we would use some metric which **quantifies both how each cluster is internally cohesive, and how well clusters are separated from each other**.
 
 Here we will use the **silhouette score** metric.
 
@@ -272,16 +274,14 @@ $SC$ is always between -1 (bad clustering) and 1 (perfect clustering).
 
 So the **silhouette score should be maximized.**
 
-> Warning : some score should be maximized and some other minimized. Be sure you know which one it should be before interpreting your results!
+> Warning : some metrics should be maximized, and others minimized. Be sure you know which one it should be before interpreting your results!
 
-The `bluster` function `approxSilhouette` returns the Silhouette score of all samples for a given clustering result. 
-
-The value is actually approximated in order to keep the computation tractable.
+The `bluster` function `approxSilhouette` returns the Silhouette score of all samples for a given clustering result (the value is approximated in order to keep the computation tractable).
 
 
 --- 
 
-Let's try to apply this logic to the iris data-set.
+Let's try to apply this logic to the iris dataset.
 
 
 ```{r}
