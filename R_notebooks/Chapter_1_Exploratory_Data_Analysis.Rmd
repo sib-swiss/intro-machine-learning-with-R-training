@@ -658,7 +658,7 @@ UMAP uses stochastic gradient descent algorithm to minimize $C$. The spectrum cl
 UMAP implements an efficient nearest neighbor search and has an overall complexity of $O(N^{1.14})$.
 
 
-### visual explaination of UMAP
+### visual explanation of UMAP
 
 [official website explaination](https://umap-learn.readthedocs.io/en/latest/how_umap_works.html)
 
@@ -669,13 +669,14 @@ UMAP implements an efficient nearest neighbor search and has an overall complexi
 
 Some of the important parameters for UMAP are:
 
+<!-- Proposal: * What data is used as input. Can be the data matrix, but it is common to start from principal components (reduced noise and dimensionality). -->
  * `n_components`: dimension of the embedding
  * `n_neighbors`: number of nearest neighbors to consider (corresponds to $n$ in the text)
  * `min_dist`: points in embedded space need to be separated by a distance of at least 'min_dist'
  * `metric`: metric to be used for measuring distances (corresponds to $d(x,y)$ in the text)
 
 
-Further information and tutorials you can find un the [UMAP vignette](https://cran.r-project.org/web/packages/umap/vignettes/umap.html).
+Further information and tutorials can be found in the [UMAP vignette](https://cran.r-project.org/web/packages/umap/vignettes/umap.html).
 
 
 ```{r}
@@ -744,16 +745,16 @@ Finally, UMAP does neither conserve distances nor densities : it is truly a visu
 
 
 It is also possible for UMAP to "hallucinate" some clusters and to break existing ones. 
-The following [article](https://distill.pub/2016/misread-tsne/) has been written for T-SNE but most of it still applies to UMAP.
+The following [article](https://distill.pub/2016/misread-tsne/) has been written for t-SNE but most of it still applies to UMAP.
 
 
 ## Exercise: PCA 
 
 **Another dataset : AML**
 
-In the following dataset from [Tyner et al. 2018](https://doi.org/10.1038/s41586-018-0623-z) we have the expression level of some genes from some different Acute Myeloid Leukaemia (AML) tumors as well as how they respond to treatment (AUC value). 
+In the following dataset from [Tyner et al. 2018](https://doi.org/10.1038/s41586-018-0623-z) we have the expression level of some genes from some different Acute Myeloid Leukaemia (AML) tumors, as well as how they respond to treatment (AUC value). 
 
-Between those different tumors there are probably different mutations occurring in different genes.
+Between those different tumors, there are probably different mutations occurring in different genes.
 
 
 ```{r}
@@ -768,14 +769,14 @@ X_aml = df_aml %>% select( c('auc' , colnames(df_aml)[9:ncol(df_aml)] ) )
 X_aml %>% head()
 ```
 
-`auc` is not a predictor, but rather a target, or response variable. At this stage you will mainly use it to color your plot and interpret your analysis
+`auc` is not a predictor, but a "target", "outcome", or "response variable". At this stage you will mainly use it to color your plot and interpret your analysis.
 
 ```{r}
-# you access the AUC using 
+# view AUC distribution
 ggplot( X_aml ,aes( x = auc ) ) + geom_histogram()
 ```
 
-We can see a cutoff at 200 betwen 2 sub-populations (high-auc and low-auc). I will use this for plotting: 
+We can see a cutoff at 200 between 2 sub-populations (high-auc and low-auc). I will use this for plotting: 
 
 ```{r}
 ggpairs(X_aml, columns = 2:6 , aes( alpha = 0.5 , col = auc<200 ))
@@ -786,9 +787,9 @@ ggpairs(X_aml, columns = 2:6 , aes( alpha = 0.5 , col = auc<200 ))
 
 **You can presume that the missing values, transformation, and data normalization for the gene expression have already been handled.**
 
-**Instruction:** Perfom a PCA on the gene expressions. Choose an interesting number of dimension and interpret the plot : 
- * What does the first component seems to stand for? 
- * What are driving genes behind the first components? 
+**Instruction:** Perfom a PCA on the gene expression data. Choose an interesting number of dimensions and interpret the plot : 
+ * What does the first component seem to correspond to? 
+ * What are driving genes behind the first component? 
 
 
 ```{r}
@@ -801,7 +802,7 @@ ggpairs(X_aml, columns = 2:6 , aes( alpha = 0.5 , col = auc<200 ))
 
  
  
-**extra task - to keep you occupied with the others finish:** use other dimensionality reduction techniques such as UMAP. What do you think?
+**extra task - to keep you occupied while the others finish:** use other dimensionality reduction techniques such as UMAP. What do you think?
 
 
 ```{r}
