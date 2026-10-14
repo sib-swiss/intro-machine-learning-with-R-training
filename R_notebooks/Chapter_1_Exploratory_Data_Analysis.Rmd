@@ -654,7 +654,15 @@ PCA is nice but, as it is a linear transform, it will often fail to capture inte
 This is where UMAP ([McInnes et al.,arxiv, 2018](https://arxiv.org/abs/1802.03426)) comes in, which you probably know from single cell RNA-seq papers.
 It is similar to t-SNE, but differs in some important details, which make it faster, and preserve the global structure better.
 
-### mathematical explanation of UMAP
+
+### visual explanation of UMAP
+
+[official website explanation](https://umap-learn.readthedocs.io/en/latest/how_umap_works.html)
+
+[interactive visualization](https://pair-code.github.io/understanding-umap/)
+
+
+### ANNEX: mathematical explanation of UMAP
 
 UMAP assumes a exponential weight between the high dimensional data points:
 
@@ -681,12 +689,6 @@ UMAP uses stochastic gradient descent algorithm to minimize $C$.
 The spectrum clustering initialization as well as the second term in $C$ are supposed to provide a better embedding for distant clusters compared to t-SNE.
 
 UMAP implements an efficient nearest neighbor search and has an overall complexity of $O(N^{1.14})$.
-
-### visual explanation of UMAP
-
-[official website explanation](https://umap-learn.readthedocs.io/en/latest/how_umap_works.html)
-
-[interactive visualization](https://pair-code.github.io/understanding-umap/)
 
 ### UMAP in practice
 
