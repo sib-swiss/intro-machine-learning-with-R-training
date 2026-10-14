@@ -95,7 +95,6 @@ If the experiment went well and the data is properly processed, we should expect
 
 Such **expectations can be quite useful in EDA and can guide our analysis**.
 
-
 ### Making sure columns are the right type
 
 ```{r}
@@ -158,7 +157,6 @@ ggplot( X_ph , aes(x = WT_DMSO, y = WT_DMSO.1) ) +
     scale_x_log10() + scale_y_log10() 
 ```
 
-
 ### Value transformation and variance stabilization
 
 We will transform the data from $x$ to $log(x+1)$.
@@ -193,7 +191,8 @@ phospho_recipe = phospho_recipe %>% prep()
 
 X_ph_transformed = phospho_recipe %>% bake( X_ph )
 
-ggpairs(X_ph_transformed , columns = 1:4 , aes( alpha = 0.5 ))
+ggplot( X_ph_transformed , aes(x = WT_DMSO, y = WT_DMSO.1) ) + 
+    geom_point()
 ```
 
 The scatter of the points does not seem to depend anymore on the log-intensity value.
@@ -362,20 +361,22 @@ recipe( df , ~. ) %>%
 Dimensionality reduction serves two purposes:
 
 -   **Visualization**: reducing the number of dimensions to 2 or 3 allows displaying the whole dataset for visual inspection.
--   **Data compression**: some features may not be very informative, and projecting feature vectors to a principal data manifold discards the uninformative part of the feature space.
+-   **Data compression**: some features may not be very informative, and projecting feature vectors to a reduced space discards the uninformative part of the feature space.
 
 ### Principal Component Analysis (PCA)
 
 PCA finds the direction in feature space with the largest variance (first principal component), meaning the direction where the data points are most spread out.
 Then it repeats the same algorithm to find the direction orthogonal to the first principal component with the largest (remaining) variance (second principal component).
+
 The second principal component can only give information about the variance not explained by the first component.
+
 Mathematically this boils down to the eigenvalue decomposition or diagonalization of the covariance matrix, where the eigenvalue is the variance of the data along its eigenvector (principal component).
 
 PCA determines the matrix of eigenvalues $\pmb{D}$ and orthogonal basis vectors (eigenvectors) $\pmb{W}$, that satisfy the following relation:
 
 $\pmb{X}^T\pmb{X}=\pmb{W}\pmb{D}\pmb{W}^T$
 
-$\pmb{X}$ must be centered around the mean value of each feature vector (each column in the dataframe has zero empirical mean), so that $\pmb{Q}=\pmb{X}^T\pmb{X}$ is the covariance matrix of your multidimensional data (zero centering is done by the PCA algorithm, so no need to do it yourself).
+$\pmb{X}$ should usually be centered around the mean value of each feature vector (each column in the dataframe has zero empirical mean), so that $\pmb{Q}=\pmb{X}^T\pmb{X}$ is the covariance matrix of your multidimensional data (zero centering is done by the PCA algorithm, so no need to do it yourself).
 
 > Note: If you center a PCA it changes the interpretation: PC1 will typically just be the vector from the origin to the data barycentre (more on that later).
 
@@ -389,8 +390,7 @@ The eigenvalues are in decreasing order of explained overall variance.
 In tidymodel we can use [step_pca](https://recipes.tidymodels.org/reference/step_pca.html) as a recipe step.
 By default it computes only the first 5 PCs, but this can be changed easily via an option.
 
-PCA analysis has a clear mathematical framework and is fast to calculate (compared to t-SNE, for example).
-It can be easily applied to distributed data and is therefore also attractive for very large datasets.
+PCA analysis is appreciated as a classical dimensionality reduction method because it has a clear mathematical framework and is fast to calculate (compared to t-SNE, for example).
 
 ### PCA on the phospho peptide dataset
 
@@ -444,6 +444,7 @@ tidy( phospho_PCA_recipe , number = 6 , type = 'coef' )
 
 ```{r}
 tidy( phospho_PCA_recipe , number = 6 , type = 'coef' ) %>%
+  mutate(  component = factor( component , levels = unique(component))) %>%
     ggplot(aes( y = terms , x = component, fill = value )) + 
     geom_tile() + 
     scale_fill_gradient2(low="blue", mid='white', high="red", midpoint = 0) 
@@ -545,14 +546,18 @@ ggbiplot(prcomp_obj,
 We see now that the Ypk1 mutants cluster together and 1NMPP1 treatments are distinct from DMSO control.
 Pka1 clusters with the WT strains and there is less difference between treatment and control.
 Sch9 and Sch9_Pka1 are similar indicating the Sch9 mutant effect is stronger than the Pka1.
-Overal the mutant effect seems stronger than the treatment effect.
+Overall the mutant effect seems stronger than the treatment effect.
 
-### PCA on the immunogenicity dataset
+### PCA on another dataset: immunogenicity dataset
 
 The second dataset we would like to use is taken from a publication by [Stronen et al., Science, 2016](https://science.sciencemag.org/content/352/6291/1337) in the field of cancer immunology.
 It measured the immunogenic potential of peptides carrying somatic mutations by testing whether they induce a CD8+ T cell response in a healthy donor.
 
-There are 3 different outcomes of the "CD8+ T cell response induced in healthy donor: Tested/Observed” feature: \* 11 positive (YES/YES), \* 46 negative (YES/NO), \* 977 unclear (NA).
+There are 3 different outcomes of the "CD8+ T cell response induced in healthy donor: Tested/Observed” feature:
+
+-   11 positive (YES/YES),
+-   46 negative (YES/NO),
+-   977 unclear (NA).
 
 The table gives various predictors of immunogenicity such as predicted HLA binding affinity for WT and mutant peptides, predicted HLA binding stability, predicted proteome cleavage compatibility, RNA-seq expression of the mutated gene, RNA-seq read coverage of the mutation.
 
