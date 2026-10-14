@@ -167,7 +167,7 @@ Note that with this transformation, 0 stays 0 ( $log(0+1) = log(1) = 0$ ).
 We could do this transform manually, with something like:
 
 ```{r}
-X_ph = log10( X_ph + 1)
+X_ph_log10 = log10( X_ph + 1)
 ```
 
 But, let's start to put some elements of tidymodels in place and make a recipe:
@@ -654,13 +654,11 @@ PCA is nice but, as it is a linear transform, it will often fail to capture inte
 This is where UMAP ([McInnes et al.,arxiv, 2018](https://arxiv.org/abs/1802.03426)) comes in, which you probably know from single cell RNA-seq papers.
 It is similar to t-SNE, but differs in some important details, which make it faster, and preserve the global structure better.
 
-
 ### visual explanation of UMAP
 
 [official website explanation](https://umap-learn.readthedocs.io/en/latest/how_umap_works.html)
 
 [interactive visualization](https://pair-code.github.io/understanding-umap/)
-
 
 ### ANNEX: mathematical explanation of UMAP
 
