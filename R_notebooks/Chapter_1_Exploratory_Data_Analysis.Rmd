@@ -47,7 +47,7 @@ In the context of tidymodels, this will also give us the possibility to start di
 
 ### First look at the data
 
-In this intoduction we are using a yeast Phospho-proteomics dataset [Plank et al. MCP, 2020](https://doi.org/10.1074/mcp.RA120.001955). The study performed a LC-MS/MS experiment and label-free quantitation to study the effect of AGC-kinase (Sch9, Pka1, Ypk1) inhibition on the phosphoproteome. 5 yeast strains were used: WT, and Sch9, Pka1, Sch9&Pka1, Ypk1 mutant strains. Sch9, Pka1, Ypk1 were mutated in order to allow the 1NMPP1 molecule to bind to the mutant <!--protein?--> and inhibit its active site. DMSO was used as a control. All measurements were performed in 3 technical replicates.
+In this intoduction we are using a yeast Phospho-proteomics dataset [Plank et al. MCP, 2020](https://doi.org/10.1074/mcp.RA120.001955). The study performed a LC-MS/MS experiment and label-free quantitation to study the effect of AGC-kinase (Sch9, Pka1, Ypk1) inhibition on the phosphoproteome. 5 yeast strains were used: WT, and Sch9, Pka1, Sch9&Pka1, Ypk1 mutant strains. Sch9, Pka1, Ypk1 were mutated in order to allow the 1NMPP1 molecule to bind to the mutant protein and inhibit its active site. DMSO was used as a control. All measurements were performed in 3 technical replicates.
 
 
 ```{r}
@@ -131,7 +131,7 @@ ggplot( X_ph , aes(x = WT_DMSO, y = WT_DMSO.1) ) +
 
 We will transform the data from $x$ to $log(x+1)$.
 
-The $+1$ <!--('offset', sometimes called a 'pseudocount' in other fields)?--> is here to avoid numerical issues with 0 values in the data. 
+The $+1$ ('offset', sometimes called a 'pseudocount' in other fields) is here to avoid numerical issues with 0 values in the data. 
 Note that with this transformation, 0 stays 0 ( $log(0+1) = log(1) = 0$ ).
 
 
@@ -361,7 +361,7 @@ $\pmb{X}^T\pmb{X}=\pmb{W}\pmb{D}\pmb{W}^T$
 
 $\pmb{X}$ must be centered around the mean value of each feature vector (each column in the dataframe has zero empirical mean), so that $\pmb{Q}=\pmb{X}^T\pmb{X}$ is the covariance matrix of your multidimensional data (zero centering is done by the PCA algorithm, so no need to do it yourself).
 
-<!-- Note: You do not necessarily have to center a PCA - but it changes the interpretation: PC1 will typically just be the vector from the origin to the barycentre. -->
+> Note: If you center a PCA it changes the interpretation: PC1 will typically just be the vector from the origin to the data barycentre (more on that later). 
 
 > Note: algorithms that perfom PCA generally use Singular Value Decomposition (SVD). 
 
@@ -456,7 +456,7 @@ ggplot( NULL, aes( x = X_pca$PC01 , y = pept_intens  )  ) +
     ylab( 'peptide intensity' )
 ```
 
-<!-- Note: this is known as a "size effect". -->
+> Note: this is known as a "size effect".
 
 Indeed, here we have normalized by column, as is classical in Machine Learning but that is not appropriate for this kind of data.
 
@@ -493,7 +493,7 @@ We see that the variance along the first PC is now reduced to ~34%, which is a g
 > **remark**: This approach is closer to usual proteomics data analysis. see [MsnBase normalize](https://rdrr.io/bioc/MSnbase/man/normalise-methods.html) for example.
 
 > **remark2**: Why then bother with the recipe and not just use the external library? The main reason why is that **recipes lead to a tidier integration in cross-validation procedures down the line**. But, it is true that in practice we will often mix approaches (at the expanse of having to write custom code to plug everything together).
-<!-- As discussed, this point could perhaps be made earlier? -->
+
 
 ```{r}
 tidy( phospho_PCA_recipe , number = 6 , type = 'coef' ) %>%
@@ -623,12 +623,12 @@ We see that the CD8 positive mutated peptides (red dots) are predominantly found
 
 PCA is nice but, as it is a linear transform, it will often fail to capture interesting non-linear patterns in complex data.
 
-This is where UMAP ([McInnes et al.,arxiv, 2018](https://arxiv.org/abs/1802.03426)) comes in, which you probably know from single cell RNA-seq papers. It is similar to t-SNE, but differs in some important details, which make it faster, applicable to more than 2 dimensions, and preserve the global structure better.
-<!-- Note: tSNE can run on more than 2 dimensions (or even just one); not that you'd want it to... -->
+This is where UMAP ([McInnes et al.,arxiv, 2018](https://arxiv.org/abs/1802.03426)) comes in, which you probably know from single cell RNA-seq papers. It is similar to t-SNE, but differs in some important details, which make it faster, and preserve the global structure better.
+
 
 ### mathematical explanation of UMAP
 
-UMAP assumes a exponential weight between the high dimensional data points <!--Brutal! But is this level of algorithmic detail necessary? -->: 
+UMAP assumes a exponential weight between the high dimensional data points: 
 
 $\mu_{ij}=e^{-\frac{d(x_{i},x_{j})-\rho_i}{\sigma_i}}$
 
@@ -644,14 +644,14 @@ UMAP determines the parameters $a$ and $b$ by a least squares fitting procedure.
 
 $C=-\sum_{i}\sum_{j}[\mu_{ij}log(\nu_{ij}) + (1-\mu_{ij})log(1-\nu_{ij})]$
 
-UMAP uses stochastic gradient descent algorithm to minimize $C$. The spectrum clustering initialisation as well as the second term in $C$ are supposed to provide a better embedding for distant clusters compared to t-SNE.
+UMAP uses stochastic gradient descent algorithm to minimize $C$. The spectrum clustering initialization as well as the second term in $C$ are supposed to provide a better embedding for distant clusters compared to t-SNE.
 
 UMAP implements an efficient nearest neighbor search and has an overall complexity of $O(N^{1.14})$.
 
 
 ### visual explanation of UMAP
 
-[official website explaination](https://umap-learn.readthedocs.io/en/latest/how_umap_works.html)
+[official website explanation](https://umap-learn.readthedocs.io/en/latest/how_umap_works.html)
 
 [interactive visualization](https://pair-code.github.io/understanding-umap/)
 
