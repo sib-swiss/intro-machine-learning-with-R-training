@@ -125,6 +125,19 @@ ggplot( X_ph , aes(x = WT_DMSO, y = WT_DMSO.1) ) +
     scale_x_log10() + scale_y_log10() 
 ```
 
+### Making sure columns are the right type
+
+```{r}
+str(df_ph)
+```
+
+It is a good idea to check the data type type of your data frame values and check whether they have the correct type. Here, the types are correct, but if you wanted to change them you could do so in the dataframe directly, e.g.:
+
+```{r}
+df_ph$WT_DMSO = as.numeric( df_ph$WT_DMSO )
+```
+
+There are many useful recipe steps, for example to [discretize continuous variables](https://recipes.tidymodels.org/reference/discretize.html?q=convert#null), or make a [factor out of a binary variable](https://recipes.tidymodels.org/reference/step_bin2factor.html), ...
 
 
 ### Value transformation and variance stabilization
@@ -299,21 +312,6 @@ For more imputation techniques check : [recipes impute steps imputation](https:/
 
 ---
 
-### Making sure columns are the right type
-
-<!-- TBD: this should probably be done BEFORE imputation, as imputation depends on it -->
-
-```{r}
-str(df_ph)
-```
-
-It is a good idea to check the data type type of your data frame values and check whether they have the correct type. Here, the types are correct, but if you wanted to change them you could do so in the dataframe directly, e.g.:
-
-```{r}
-df_ph$WT_DMSO = as.numeric( df_ph$WT_DMSO )
-```
-
-There are many useful recipe steps, for example to [discretize continuous variables](https://recipes.tidymodels.org/reference/discretize.html?q=convert#null), or make a [factor out of a binary variable](https://recipes.tidymodels.org/reference/step_bin2factor.html), ...
 
 ### One hot encoding of categorical data 
 
