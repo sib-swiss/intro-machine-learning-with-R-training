@@ -40,6 +40,16 @@ You will also need to have installed the following packages:
  * bluster
 
 
+This can be done by running the code:
+
+```r
+install.packages(c(
+  "BiocManager", "dendextend", "dplyr", "ggplot2", "GGally", "ggbiplot", "gplots",
+  "gridExtra", "important", "pheatmap", "ranger", "RColorBrewer", "stringr", "tidyr", 
+  "tidymodels", "recipes", "rpart.plot", "themis", "vip", "umap"))
+BiocManager::install("bluster")
+```
+
 ## course organization
 
 The course is organized in several numbered Rmarkdown documents, each corresponding to a chapter which interleaves theory, code demo, and exercises.
