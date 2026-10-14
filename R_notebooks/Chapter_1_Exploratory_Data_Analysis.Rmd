@@ -30,16 +30,16 @@ Tidymodels is actually a collection of packages handling different facets of Mac
  * [yardstick](https://yardstick.tidymodels.org/): handles performance metrics
 
 
-We will introduce the main interfaces and behaviour of all these libraries, but you can expect to spend a bit of time in these websites documentation over the next two days, as well as during your ML work afterward.
+We will introduce the main interfaces and behaviour of all these libraries, but you can expect to spend a bit more time in their documentation over the next two days, as well as during your ML work afterward.
 
 
-## Data prepartion for ML
+## Data preparation for ML
 
-Before we do actual Machine Learning, it is always crucial to explore the data, as step commonly called Exploratory Data Analysis (EDA).
+Before we do actual Machine Learning, it is always crucial to explore the data, a step commonly called Exploratory Data Analysis (EDA).
 
-This step encompasses checking data format, cleaning the data, flagging eventual outliers, deciding on preprocessing options for your data, refining the hypothesis you will test with your models, ...
+This step encompasses checking data formatting, cleaning the data, flagging possible outliers, deciding on preprocessing options for your data, refining the hypothesis you will test with your models, ...
 
-EDA is very important and should not be neglected as it sets the stage for the rest of the analysis. In fact, you can sometimes spend 80% of your time on that step and a thorough EDA often makes the analysis much smoother down the line.
+EDA is very important and should not be neglected as it sets the stage for the rest of the analysis. In fact, you can sometimes spend 80% of your time on it! A thorough EDA often makes the analysis much smoother down the line.
 
 ---
 
@@ -47,7 +47,7 @@ In the context of tidymodels, this will also give us the possibility to start di
 
 ### First look at the data
 
-In this intoduction we are using a yeast Phospho proteomics dataset [Plank et al. MCP, 2020](https://doi.org/10.1074/mcp.RA120.001955). The study performed a LC-MS/MS experiment and label-free quantitation to study the effect of AGC-kinase (Sch9, Pka1, Ypk1) inhibition on the phosphoproteome. 5 yeast strains were used: WT, and Sch9, Pka1, Sch9&Pka1, Ypk1 mutant strains. Sch9, Pka1, Ypk1 were mutated in order to allow the 1NMPP1 molecule to bind to the mutant and inhibit its active site. DMSO was used as a control. All measurements were performed in 3 technical replicates.
+In this intoduction we are using a yeast Phospho-proteomics dataset [Plank et al. MCP, 2020](https://doi.org/10.1074/mcp.RA120.001955). The study performed a LC-MS/MS experiment and label-free quantitation to study the effect of AGC-kinase (Sch9, Pka1, Ypk1) inhibition on the phosphoproteome. 5 yeast strains were used: WT, and Sch9, Pka1, Sch9&Pka1, Ypk1 mutant strains. Sch9, Pka1, Ypk1 were mutated in order to allow the 1NMPP1 molecule to bind to the mutant <!--protein?--> and inhibit its active site. DMSO was used as a control. All measurements were performed in 3 technical replicates.
 
 
 ```{r}
@@ -58,16 +58,19 @@ df_ph %>% head()
 
 In Machine Learning (as in some other statistical fields), we often specify our data in terms of **X** and **y**
 
-**y** is the *target* or *response variable*, which is generally the thing we want to be able to predict or describe at the end of the analysis. **Not all analysis have a target.**
+**y**:
+
+* the *target* or *response variable*, which is generally the thing we want to be able to predict or describe at the end of the analysis. 
+* **Not all analyses have a target.**
 
 **X**:
 
  * contains all the variables that can be used to predict the target or describe the data
  * table: rows are observations, columns are variables (also called features)
 
-> NB: many biological field (eg. RNAseq) have the converse (rows are variables, columns are obervation). One has to be mindful of this and decide how best to conform the data to the libraries' expectations.
+> NB: packages from many biological fields (eg. RNA-seq) rotate the table (rows are variables, columns are obervations). One has to be mindful of this and decide how best to conform the data to the packages' expectations.
 
-In this analysis for the moment we just have **X**, which corresponds to columns 3 onward.
+In this analysis, **X** is part of the data.frame we just loaded (column 3 and onwards):
 
 ```{r}
 X_ph = df_ph[,3:ncol(df_ph)]
@@ -79,29 +82,27 @@ The columns of X_ph corresponds to different samples
 colnames( X_ph )
 ```
 
-We can see that some are technical replicates to one-another. 
+We can see that some are technical replicates of others. 
 If the experiment went well and the data is properly processed, we should expect the replicates to be similar to one another.
 
 Such **expectations can be quite useful in EDA and can guide our analysis**.
 
 
-Let's look at the reproducibility of the replicates using ggplot `ggpairs`:
+Let's look at the reproducibility of a few replicates using ggplot `ggpairs`:
 
 ```{r}
 ggpairs(X_ph, columns = 1:4 , aes( alpha = 0.5 ))
 ```
 
-The lower triangle part of the figure shows the relationship of values between two sampels determined by the row and column, while the upper triangle shows the linear correlation value between the two sample.
+The *lower triangle* part of the figure shows the relationship of values between two samples determined by the row and column, while the *upper triangle* shows the linear correlation value between the two samples. The *diagonal* shows a density plot of the values for the sample corresponding to the column.
 
-The diagonal shows a density plot of the sample corresponding to the column.
-
-The first 3 rows and columns are technical replicates of the condition WT_DMSO, the 4th row is another condition.
+The first 3 rows and columns are technical replicates of the condition WT_DMSO, the 4th row is from another condition.
 
 **Question:** what to you observe in this figure? Anything odd about the relationship between samples? about the data shape? about their values?
 
 ---
 
-This becomes more obvious if we look at less samples:
+This becomes more obvious if we look at fewer samples:
 
 ```{r}
 ggplot( X_ph , aes(x = WT_DMSO) ) + geom_density()
@@ -109,9 +110,10 @@ ggplot( X_ph , aes(x = WT_DMSO) ) + geom_density()
 ```{r}
 ggplot( X_ph , aes(x = WT_DMSO, y = WT_DMSO.1) ) + geom_point()
 ```
+
 ---
 
-We can address this observed pattern of heteroskedascticity by log-transforming the intensity values, which stabilizes the variance i.e. the scatter or variance will be constant or depend less on the values. This is a desirable feature which makes subsequent data analysis (e.g. t-tests) easier.
+We can address this observed pattern of heteroskedasticity by log-transforming the intensity values, which stabilizes the variance, i.e. the scatter or variance will be constant or depend less on the values. This is a desirable feature which makes subsequent data analysis (e.g. t-tests) easier.
 
 ```{r}
 ggplot( X_ph , aes(x = WT_DMSO) ) + geom_density() + scale_x_log10() 
@@ -123,21 +125,23 @@ ggplot( X_ph , aes(x = WT_DMSO, y = WT_DMSO.1) ) +
     scale_x_log10() + scale_y_log10() 
 ```
 
+
+
 ### Value transformation and variance stabilization
 
 We will transform the data from $x$ to $log(x+1)$.
 
-The $+1$ is here to avoid numerical issues with 0 values in the data. 
-Note that with this transformation 0 stay 0 ( $log(0+1) = log(1) = 0$ )
+The $+1$ <!--('offset', sometimes called a 'pseudocount' in other fields)?--> is here to avoid numerical issues with 0 values in the data. 
+Note that with this transformation, 0 stays 0 ( $log(0+1) = log(1) = 0$ ).
 
 
-We could do this transform manually, with something like 
+We could do this transform manually, with something like:
 
-```r
+```{r}
 X_ph = log10( X_ph + 1)
 ```
-
-But, let's start to put some element of tidymodels in place and make a recipe:
+ 
+But, let's start to put some elements of tidymodels in place and make a recipe:
 
 ```{r}
 phospho_recipe = recipe( formula = ~. , data = X_ph ) %>%  
@@ -153,7 +157,7 @@ Once the recipe is created we use:
 
  * `prep`: fits the different recipe steps with the data (here not useful but still necessary) 
  * `bake`: transforms the data, or new data using the recipe
- 
+
 ```{r}
 phospho_recipe = phospho_recipe %>% prep()
 
@@ -161,6 +165,7 @@ X_ph_transformed = phospho_recipe %>% bake( X_ph )
 
 ggpairs(X_ph_transformed , columns = 1:4 , aes( alpha = 0.5 ))
 ```
+
 
 The scatter of the points does not seem to depend anymore on the log-intensity value. The log-intensities are more evenly distributed compared to the raw intensities.
 
@@ -174,14 +179,14 @@ Missing values are a common occurrence in many fields, and we need to account fo
  * many ML algorithms cannot handle missing values (eg, linear models, PCA, ...)
  * ...
 
-Depending on the nature of the data, they could be missing for different reasons and the way that we handle them would be different.
-Without going too deep on the topic, handling missing values is guided by a mixture of topic-expertise (ie, using best practices approaches in the field) and data-driven or objective-driven approaches (more on this later).
+Depending on the nature of the data, they could be missing for different reasons, and the way that we handle them would be different.
+Without going too deep into the topic, handling missing values is guided by a mixture of expertise (ie, using field best practices) and data-driven or objective-driven approaches (more on this later).
 
-For our case, missing values are common in proteomics data. They are caused among others by the limited sensitivity of the mass spectrometers or inaccuracies in the computational data processing.
+For our case, missing values are common in proteomics data. They are caused by the limited sensitivity of the mass spectrometers or inaccuracies in the computational data processing, amongst other reasons.
 
 ---
 
-In the data they can be represented in many way, commonly as `NA`, but also `0`, an empty string, ... It is also part of EDA to scan the data to learn how the missing values may have been encoded.
+In the data itself, they can be represented in many ways, commonly as `NA`, but also as `0`, an empty string,... It is also part of EDA to scan the data to learn how the missing values may have been encoded.
 
 In this dataset, they are represented by 0.
 
@@ -189,17 +194,18 @@ In this dataset, they are represented by 0.
 In order to get a better look at missing values in the entire dataset, we can plot the data as a heatmap:
 
 ```{r}
-heatmap( (X_ph_transformed==0)*1 ,# %>% as.matrix() , 
-        Rowv = NA, Colv = NA,
-        scale = 'none' ,
-        col = 
-         )
+heatmap( 
+  (X_ph_transformed==0)*1 ,
+  Rowv = NA, Colv = NA, # no row/col reordering
+  labRow = NA,          # don't show row names
+  scale = 'none' ,      # no auto scaling
+  margins = c(8.5, 3)   # spacing for labels
+)
 ```
 
 This shows that the missing or zero values (dark elements) are ubiquitous. 
 
-The missing values are not randomly distributed but more likely for low intensity peptides: the average peptide intensity decreases with increasing number of missing values per peptide. 
-
+Do the missing values occur more often at low intensities? This would indicate we're hitting the lower detection limit.
 
 ```{r}
 sums = rowSums( X_ph_transformed )
@@ -214,6 +220,8 @@ ggplot( NULL , aes( x = avg_without_missing , y = nr_missing ) ) +
 
 ```
 
+=> Indeed, the missing values are not randomly distributed but more likely for low intensity peptides: the average peptide intensity decreases with increasing number of missing values per peptide. 
+
 
 ```{r}
 hist(nr_missing, 
@@ -222,9 +230,9 @@ hist(nr_missing,
      xlab = "# missing values per peptide")
 ```
 
-They are many ways to deal with missing values. The simplest strategies are just to remove all peptides that contain a missing value or to impute a mean value for all zero values.
+They are many ways to deal with missing values. The simplest strategies are just to remove all peptides that contain a missing value, or to impute a mean value for all zero values.
 
-Most of the peptides have zero missing values so **discarding all peptides with missing values** means throwing away some data, but it is a feasible strategy for these data. 
+Here, a noticeable amount of peptides have at least one missing value, so **discarding all peptides with missing values** means throwing away some data, but it is a feasible strategy for this dataset. 
 
 
 ```{r}
@@ -239,7 +247,7 @@ X_ph_positive %>% head()
 
 > **NB:** in `step_naomit` we have to set `skip=FALSE` so row may actually be removed when calling `bake`.
 
-Another missing value strategy would be to impute all zero values with the mean of all positive values. 
+Another missing value strategy would be to impute all zero values with the mean of all non-zero values; this can be done by peptide, by sample, or both. More advanced imputation strategies also exist.
 
 
 ```{r}
@@ -258,24 +266,26 @@ It is thus important to **evaluate the effect this operation has in order to be 
 Here, we can look at the correlation between samples, under our assumption that technical replicates should be similar
 
 
-```{r}
+```{r fig.width=5, fig.height=5}
 heatmap.2( cor( X_ph ) , 
            col=viridisLite::plasma(50), breaks = seq(0,1,length.out=51 ),
            Rowv = FALSE , Colv = FALSE, 
            density.info="none", trace="none",
-           main = "raw data")
+           main = "raw data",
+           margins = c(9,9))
 ```
-```{r}
+```{r fig.width=5, fig.height=5}
 heatmap.2( cor( X_ph_positive ) , 
            col=viridisLite::plasma(50), breaks = seq(0,1,length.out=51 ),
            Rowv = FALSE , Colv = FALSE, 
            density.info="none", trace="none",
-           main = "removed NAs")
+           main = "removed NAs",
+           margins = c(9,9))
 ```
 
 We see that the replicates of the same mutant strain correlate and the mutant strain has a stronger effect than the treatment (1NMPP1 or DMSO), but removing missing values in this case clearly improves the correlation between treatments! 
 
-**Micro exercise** : vizualize the correlation between samples on the data imputed with the column mean. Which strategy seems preferable in that particular case?
+**Micro exercise** : vizualize the correlation between samples on the data imputed with the column mean. Which strategy now seems preferable?
 
 
 ```{r}
@@ -291,18 +301,19 @@ For more imputation techniques check : [recipes impute steps imputation](https:/
 
 ### Making sure columns are the right type
 
+<!-- TBD: this should probably be done BEFORE imputation, as imputation depends on it -->
 
 ```{r}
 str(df_ph)
 ```
 
-It is a good idea to check the data type type of your data frame values and check whether they have the correct type. Here the types are correct, but if you wanted to change them you could do so in the dataframe directly:
+It is a good idea to check the data type type of your data frame values and check whether they have the correct type. Here, the types are correct, but if you wanted to change them you could do so in the dataframe directly, e.g.:
 
-```r
+```{r}
 df_ph$WT_DMSO = as.numeric( df_ph$WT_DMSO )
 ```
 
-There also exists useful recipe steps, for example to [discretize continuous variables](https://recipes.tidymodels.org/reference/discretize.html?q=convert#null), or make a [factor out of a binary variable](https://recipes.tidymodels.org/reference/step_bin2factor.html), ...
+There are many useful recipe steps, for example to [discretize continuous variables](https://recipes.tidymodels.org/reference/discretize.html?q=convert#null), or make a [factor out of a binary variable](https://recipes.tidymodels.org/reference/step_bin2factor.html), ...
 
 ### One hot encoding of categorical data 
 
@@ -334,37 +345,38 @@ recipe( df , ~. ) %>%
 
 ## Dimensionality reduction
 
-Dimensionality reduction serves two puposes
+Dimensionality reduction serves two purposes:
 
- * **Visualization**: reducing the number of dimensions to 2 or 3 allows displaying the whole dataset for visual inspection
- * **Data compression**: some features may be little informative and projecting feature vectors to the principal data manifold allows discarding the uninformative part of the feature space
+ * **Visualization**: reducing the number of dimensions to 2 or 3 allows displaying the whole dataset for visual inspection.
+ * **Data compression**: some features may not be very informative, and projecting feature vectors to a principal data manifold discards the uninformative part of the feature space.
 
 
 ### Principal Component Analysis (PCA)
 
-PCA finds the direction in feature space with the largest variance (first principal component), meaning the direction where the data points are most spread out. Then it repeats the same algorithm to find the direction orthogonal to the first principal component (second principal component) with the largest (remaining) variance. The second principal component can only give information about the variance not explained by the first component. Mathematically this boils down to the eigenvalue decomposition or diagonalization of the covariance matrix, where the eigenvalue is the variance of the data along its eigenvector (principal component).
+PCA finds the direction in feature space with the largest variance (first principal component), meaning the direction where the data points are most spread out. Then it repeats the same algorithm to find the direction orthogonal to the first principal component with the largest (remaining) variance (second principal component). The second principal component can only give information about the variance not explained by the first component. Mathematically this boils down to the eigenvalue decomposition or diagonalization of the covariance matrix, where the eigenvalue is the variance of the data along its eigenvector (principal component).
 
-In PCA are looking for the matrix of eigenvalues $\pmb{D}$ and orthogonal basis vectors (eigenvectors) $\pmb{W}$, that satisfies the following relation:
+PCA determines the matrix of eigenvalues $\pmb{D}$ and orthogonal basis vectors (eigenvectors) $\pmb{W}$, that satisfy the following relation:
 
 $\pmb{X}^T\pmb{X}=\pmb{W}\pmb{D}\pmb{W}^T$
 
 $\pmb{X}$ must be centered around the mean value of each feature vector (each column in the dataframe has zero empirical mean), so that $\pmb{Q}=\pmb{X}^T\pmb{X}$ is the covariance matrix of your multidimensional data (zero centering is done by the PCA algorithm, so no need to do it yourself).
 
+<!-- Note: You do not necessarily have to center a PCA - but it changes the interpretation: PC1 will typically just be the vector from the origin to the barycentre. -->
+
 > Note: algorithms that perfom PCA generally use Singular Value Decomposition (SVD). 
 
 ![PCA illustration](../images/PCA.png)
 
-The output of such a process is a set of eigenvectors or PCs (which are a linear combination of your former features) and the variance corresponding to each eigenvector (eigenvalues). The eigenvalues are in decreasiung order to give us their decreasing signficance to explain the overall variance. 
+The output of such a process is a set of eigenvectors or PCs (which are a linear combination of your former features) and the variance corresponding to each eigenvector (eigenvalues). The eigenvalues are in decreasing order of explained overall variance. 
 
-In tidymodel we can use [step_pca](https://recipes.tidymodels.org/reference/step_pca.html) as a recipe step. By default computes only the first 5 PC axes but this can be changed easily via an option.
+In tidymodel we can use [step_pca](https://recipes.tidymodels.org/reference/step_pca.html) as a recipe step. By default it computes only the first 5 PCs, but this can be changed easily via an option.
 
 
 
 PCA analysis has a clear mathematical framework and is fast to calculate (compared to t-SNE, for example). It can be easily applied to distributed data and is therefore also attractive for very large datasets. 
 
+
 ### PCA on the phospho peptide dataset
-
-
 ```{r}
 phospho_PCA_recipe = recipe( formula = ~. , data = X_ph ) %>%  
     step_log( all_numeric_predictors(), 
@@ -406,7 +418,7 @@ tidy( phospho_PCA_recipe , number = 6 , type = 'variance' ) %>%
 ```
 
 
-With `type='coef'` we get a table with the contribution of each original variable to the PC axes (more on this later).
+With `type='coef'`, we get a table with the contribution of each original variable to the PC axes (more on this later).
 
 ```{r}
 tidy( phospho_PCA_recipe , number = 6 , type = 'coef' )
@@ -417,6 +429,7 @@ tidy( phospho_PCA_recipe , number = 6 , type = 'coef' ) %>%
     geom_tile() + 
     scale_fill_gradient2(low="blue", mid='white', high="red", midpoint = 0) 
 ```
+
 
 ```{r}
 X_pca %>% head()
@@ -442,6 +455,8 @@ ggplot( NULL, aes( x = X_pca$PC01 , y = pept_intens  )  ) +
     xlab( 'PC01' ) +
     ylab( 'peptide intensity' )
 ```
+
+<!-- Note: this is known as a "size effect". -->
 
 Indeed, here we have normalized by column, as is classical in Machine Learning but that is not appropriate for this kind of data.
 
@@ -475,9 +490,10 @@ tidy( phospho_PCA_recipe , number = 6 , type = 'variance' ) %>%
 
 We see that the variance along the first PC is now reduced to ~34%, which is a good sign.
 
-> **remark**: This approach is closer to what would usually be used to normalize proteomics data. see [MsnBase normalize](https://rdrr.io/bioc/MSnbase/man/normalise-methods.html) for example.
+> **remark**: This approach is closer to usual proteomics data analysis. see [MsnBase normalize](https://rdrr.io/bioc/MSnbase/man/normalise-methods.html) for example.
 
 > **remark2**: Why then bother with the recipe and not just use the external library? The main reason why is that **recipes lead to a tidier integration in cross-validation procedures down the line**. But, it is true that in practice we will often mix approaches (at the expanse of having to write custom code to plug everything together).
+<!-- As discussed, this point could perhaps be made earlier? -->
 
 ```{r}
 tidy( phospho_PCA_recipe , number = 6 , type = 'coef' ) %>%
@@ -583,6 +599,7 @@ ggbiplot(prcomp_obj,
          )
 
 ```
+
 Alternative visualization with ellipses for the groups:
 
 ```{r}
@@ -604,25 +621,26 @@ We see that the CD8 positive mutated peptides (red dots) are predominantly found
 
 ## UMAP
 
-PCA is nice but as it is a linear transform it will often fail to capture interesting non-linear pattern in complex data.
+PCA is nice but, as it is a linear transform, it will often fail to capture interesting non-linear patterns in complex data.
 
-There comes UMAP ([McInnes et al.,arxiv, 2018](https://arxiv.org/abs/1802.03426)), which you probably know from single cell RNA-seq papers. It is similar to t-SNE, but differs in some important details, which make it faster, applicable to more than 2 dimensions and preserve the global structure better. Here is how it works:
+This is where UMAP ([McInnes et al.,arxiv, 2018](https://arxiv.org/abs/1802.03426)) comes in, which you probably know from single cell RNA-seq papers. It is similar to t-SNE, but differs in some important details, which make it faster, applicable to more than 2 dimensions, and preserve the global structure better.
+<!-- Note: tSNE can run on more than 2 dimensions (or even just one); not that you'd want it to... -->
 
-### mathematical explaination of UMAP
+### mathematical explanation of UMAP
 
-UMAP assumes a exponential weight between the high dimensional data points: 
+UMAP assumes a exponential weight between the high dimensional data points <!--Brutal! But is this level of algorithmic detail necessary? -->: 
 
 $\mu_{ij}=e^{-\frac{d(x_{i},x_{j})-\rho_i}{\sigma_i}}$
 
-$\rho_i$ is the distance $d(x_{i},x_{k})$ of $x_{i}$ to its nearest neighbor $x_{k}$. Let $NN(i,n)$ be the set of $n$ nearest neighbors of $x_i$. $sigma_i$ is chosen such that $\sum_{k \in NN(i,n)}\mu_{ik} = log_2(n)$. In contrast to t-SNE the weights are not normalized, which saves computation time.
+$\rho_i$ is the distance $d(x_{i},x_{k})$ of $x_{i}$ to its nearest neighbor $x_{k}$. Let $NN(i,n)$ be the set of $n$ nearest neighbors of $x_i$. $sigma_i$ is chosen such that $\sum_{k \in NN(i,n)}\mu_{ik} = log_2(n)$. In contrast to t-SNE, the weights are not normalized, which saves computation time. <!-- At what cost? -->
 
-Next the weights $mu_{ij}$ are turned into a weighted adjacency matrix and spectral clustering is used to find an initial embedding of the data points in the low dimensional space.
+Next, the weights $mu_{ij}$ are turned into a weighted adjacency matrix and spectral clustering is used to find an initial embedding of the data points in a lower dimensional space.
 
-For the representation in the low dimensional space, UMAP uses a heavy tailed weight:
+For the representation in the low dimensional space, UMAP uses a heavy-tailed weight:
 
 $\nu_{ij} = (1 + a(|x_i − x_j|_2^2)^b)^{−1}$
 
-UMAP determines the parameters $a$ and $b$ by a least square fitting procedure. As a similarity measure between the $\mu_{ij}$ and $\nu_{ij}$ distributions it uses:
+UMAP determines the parameters $a$ and $b$ by a least squares fitting procedure. As a similarity measure between the $\mu_{ij}$ and $\nu_{ij}$ distributions it uses:
 
 $C=-\sum_{i}\sum_{j}[\mu_{ij}log(\nu_{ij}) + (1-\mu_{ij})log(1-\nu_{ij})]$
 
@@ -631,7 +649,7 @@ UMAP uses stochastic gradient descent algorithm to minimize $C$. The spectrum cl
 UMAP implements an efficient nearest neighbor search and has an overall complexity of $O(N^{1.14})$.
 
 
-### visual explaination of UMAP
+### visual explanation of UMAP
 
 [official website explaination](https://umap-learn.readthedocs.io/en/latest/how_umap_works.html)
 
@@ -648,7 +666,7 @@ Some of the important parameters for UMAP are:
  * `metric`: metric to be used for measuring distances (corresponds to $d(x,y)$ in the text)
 
 
-Further information and tutorials you can find un the [UMAP vignette](https://cran.r-project.org/web/packages/umap/vignettes/umap.html).
+Further information and tutorials can be found in the [UMAP vignette](https://cran.r-project.org/web/packages/umap/vignettes/umap.html).
 
 
 ```{r}
@@ -717,16 +735,16 @@ Finally, UMAP does neither conserve distances nor densities : it is truly a visu
 
 
 It is also possible for UMAP to "hallucinate" some clusters and to break existing ones. 
-The following [article](https://distill.pub/2016/misread-tsne/) has been written for T-SNE but most of it still applies to UMAP.
+The following [article](https://distill.pub/2016/misread-tsne/) has been written for t-SNE but most of it still applies to UMAP.
 
 
 ## Exercise: PCA 
 
 **Another dataset : AML**
 
-In the following dataset from [Tyner et al. 2018](https://doi.org/10.1038/s41586-018-0623-z) we have the expression level of some genes from some different Acute Myeloid Leukaemia (AML) tumors as well as how they respond to treatment (AUC value). 
+In the following dataset from [Tyner et al. 2018](https://doi.org/10.1038/s41586-018-0623-z) we have the expression level of some genes from some different Acute Myeloid Leukaemia (AML) tumors, as well as how they respond to treatment (AUC value). 
 
-Between those different tumors there are probably different mutations occurring in different genes.
+Between those different tumors, there are probably different mutations occurring in different genes.
 
 
 ```{r}
@@ -741,14 +759,14 @@ X_aml = df_aml %>% select( c('auc' , colnames(df_aml)[9:ncol(df_aml)] ) )
 X_aml %>% head()
 ```
 
-`auc` is not a predictor, but rather a target, or response variable. At this stage you will mainly use it to color your plot and interpret your analysis
+`auc` is not a predictor, but a "target", "outcome", or "response variable". At this stage you will mainly use it to color your plot and interpret your analysis.
 
 ```{r}
-# you access the AUC using 
+# view AUC distribution
 ggplot( X_aml ,aes( x = auc ) ) + geom_histogram()
 ```
 
-We can see a cutoff at 200 betwen 2 sub-populations (high-auc and low-auc). I will use this for plotting: 
+We can see a cutoff at 200 between 2 sub-populations (high-auc and low-auc). I will use this for plotting: 
 
 ```{r}
 ggpairs(X_aml, columns = 2:6 , aes( alpha = 0.5 , col = auc<200 ))
@@ -759,9 +777,10 @@ ggpairs(X_aml, columns = 2:6 , aes( alpha = 0.5 , col = auc<200 ))
 
 **You can presume that the missing values, transformation, and data normalization for the gene expression have already been handled.**
 
-**Instruction:** Perfom a PCA on the gene expressions. Choose an interesting number of dimension and interpret the plot : 
- * What does the first component seems to stand for? 
- * What are driving genes behind the first components? 
+**Instruction:** Perform a PCA on the gene expression data. Choose an interesting number of dimensions and interpret the plot: 
+
+ * What does the first component seem to correspond to? 
+ * What are driving genes behind the first component? 
 
 
 ```{r}
@@ -774,7 +793,7 @@ ggpairs(X_aml, columns = 2:6 , aes( alpha = 0.5 , col = auc<200 ))
 
  
  
-**extra task - to keep you occupied with the others finish:** use other dimensionality reduction techniques such as UMAP. What do you think?
+**extra task - to keep you occupied while the others finish:** use other dimensionality reduction techniques such as UMAP. What do you think?
 
 
 ```{r}
