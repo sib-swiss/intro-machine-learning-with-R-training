@@ -195,7 +195,7 @@ For this simple dataset, this is unlikely to matter much, but it is nevertheless
 
 #### What values should we give to parameter K?
 
-```{r}
+```{r fig.width=12, fig.height=4}
 iris_pca %>% 
     mutate( km2 = kmeans( iris_pca %>% select(starts_with("PC")) , 
                                    centers = 2,
@@ -310,7 +310,7 @@ For each point:
 
 We can actually look at the average silhouette score to get a score for the whole clustering, or look at individual values (which could help flag outliers, unstable clusters, ...)
 
-```{r}
+```{r fig.width=3, fig.height=5}
 ggplot( sil , aes( x = as.factor( cluster ) , y = width ) ) + geom_boxplot()
 ```
 
@@ -363,7 +363,7 @@ scores
 ```
 
 
-```{r}
+```{r fig.width=8, fig.height=4}
 p1 <- ggplot( scores , aes( x = K, y = silhouette ) ) + geom_line()
 p2 <- ggplot( scores , aes( x = K, y = ARI ) ) + geom_line()
 grid.arrange(p1, p2, ncol=2)
@@ -456,14 +456,12 @@ h_average  = hclust(d, method = 'average')
 For plotting the dendrogram, we will use [dendextend](https://cran.r-project.org/web/packages/dendextend/vignettes/Cluster_Analysis.html)
 
 
-```{r}
-
+```{r fig.width=12, fig.height=4}
 par(mfrow=c(1,3))
 
 dend <- as.dendrogram(h_single)
 labels_colors(dend) <- c('salmon','cornflowerblue')[ df_moons$y[order.dendrogram(dend)] ]
 plot(dend , main="single")
-
 
 dend <- as.dendrogram(h_complete)
 labels_colors(dend) <- c('salmon','cornflowerblue')[ df_moons$y[order.dendrogram(dend)] ]
@@ -472,8 +470,6 @@ plot(dend , main="complete")
 dend <- as.dendrogram(h_average)
 labels_colors(dend) <- c('salmon','cornflowerblue')[ df_moons$y[order.dendrogram(dend)] ]
 plot(dend , main="average")
-
-
 ```
 
 ```{r}
@@ -532,7 +528,7 @@ km_sweep = clusterSweep( iris_pca %>% select(starts_with("PC")) ,
                          
 
 ```
-```{r}
+```{r fig.width=12, fig.height=4}
 ## compute silhouette
 sil <- vapply(as.list(km_sweep$clusters), 
               function(clustering) mean(approxSilhouette(iris_pca %>% select(starts_with("PC")),
@@ -561,7 +557,7 @@ grid.arrange(p1, p2, ncol=2)
 Last but not least, hierarchical clustering is very common in **heatmaps**:
 
 
-```{r fig.width=5, fig.height=6}
+```{r fig.width=5, fig.height=7}
 heatmap.2( as.matrix( iris[,-5] ) , cexCol = 1, margins=c(6, 1), labRow = NA )
 ```
 
@@ -596,8 +592,8 @@ You can presume that the data has already been properly normalized, scaled, and 
 <!-- Perhaps use fread to load this in faster? -->
 ```{r}
 ## reading the data
-X_rpkm = read.csv( "../data/GSE81861_log10_RPKM.filtered.csv" , row.names = 1 )
-X_rpkm %>% head()
+X_rpkm <- read.csv( "../data/GSE81861_log10_RPKM.filtered.csv" , row.names = 1 )
+X_rpkm[1:5,1:5] # top left corner
 ```
 
 
