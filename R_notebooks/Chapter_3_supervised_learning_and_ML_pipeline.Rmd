@@ -18,19 +18,19 @@ library(gridExtra)
 library(tidymodels)
 ```
 
-In this chapter we will use a simple regression case to introduce some **core concepts of Supervised Learning and Machine Learning**.
+In this chapter, we will use a simple regression case to introduce some **core concepts of Supervised Learning and Machine Learning**.
 
-![image showing the difference between classification (left) and regression (right). On the left, set of red and blue points are separated by a black line which represent our model. In contrast, the model's line follow along the patterns of the points cloud](../images/class_reg.png)
+![Image showing the difference between classification (left) and regression (right). On the left, sets of red and blue points are separated by a black line which represents our model. In contrast, the regression model's line follows the point cloud.](../images/class_reg.png)
 
-Supervised Learning considers tasks where we want to predict a predefined target. If the target is categorical we talk about a **classification task**. If the target is continuous we talk about **regression task**.
+Supervised Learning considers tasks where we want to predict a predefined target. If the target is categorical, it is a **classification task**. If the target is continuous, it is a **regression task**.
 
-Regression and classification use different models and optimize different metric, but in Machine Learning they also share many common practices and concerns.
+Regression and classification use different models and optimize different metrics, but in Machine Learning they also share many common practices and concerns.
 
 The machine learning paradigm emphasizes the importance of building a model that will be good **not only on the data it has been trained on, but also on new data**. In other words, we want a model that can be **generalized to new data**.
 
-# motivating example
+# Motivating example
 
-[Acharjee et al.2016](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-016-1043-4) propose several -omic dataset which they used to predict and gain knowledge on various phenotypic traits in potatos.
+[Acharjee et al.2016](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-016-1043-4) explore several -omic datasets, using them to predict and gain knowledge on various phenotypic traits in potatoes.
 
 Here, we will concentrate on their transcriptomics dataset and the phenotypic trait of the potato coloration.
 
@@ -46,12 +46,10 @@ dfTT = read.csv( file_data , row.names = 1 )
 
 dfTT[ row.names(df) , "Flesh.Colour"  ] <- df[ , "Flesh.Colour"  ]  
 
-dfTT %>% head()
+head(cbind(dfTT[,1:5],dfTT[,"Flesh.Colour",drop=FALSE])) # view small section
 ```
 
-For the sake of our story, we will imagine that out of the 86 potatos in the data, we have only 73 at the time of our experiment.
-
-We put aside the rest for later.
+For the sake of our story, we will imagine that out of the 86 potatoes in the data, we have only 73 when performing the initial sequencing. We'll put aside the rest for later.
 
 ```{r}
 i1 = row.names(df)[1:73]
@@ -60,7 +58,7 @@ i2 = row.names(df)[74:nrow( df )]
 
 ```{r}
 X = dfTT[i1 , ]
-X %>% head()
+X[,1:5] %>% head()
 ```
 
 ```{r}
@@ -79,7 +77,7 @@ $$flesh color = \beta_1 * E1 + \beta_2 * E2 + ... + \beta_n * En $$
 
 Where $Ex$ is the expression level of gene $x$, and $\beta_x$ is the associated coefficient (which describes how much the expression of gene $x$ contributes to the flesh color prediction).
 
-> It is very likely that you have already seen and manipulated linear models previously, and we are not going to develop much further here. But in case this is the first time you meet them, or you just want a refresher, here is a [jupyter notebook on linear model](https://github.com/sib-swiss/statistics-and-machine-learning-training/blob/main/01_regression_Least_Square.ipynb), from one of our other courses ;-)
+> It is very likely that you have already seen and manipulated linear models previously, and we are not going to develop much further here. But in case this is the first time you meet them, or you just want a refresher, here is a [jupyter notebook on linear models](https://github.com/sib-swiss/statistics-and-machine-learning-training/blob/main/01_regression_Least_Square.ipynb), from one of our other courses ;-)
 
 ------------------------------------------------------------------------
 
@@ -89,15 +87,17 @@ For this, we will introduce some syntax elements from [parsnip](https://parsnip.
 
 ---
 
-With parsnip you instanciate a model, coming from a broad family and you set its `engine`, which represents the specific implementation you want.
+With parsnip you instanciate a model from a broad family, and set its `engine`, which represents the specific implementation you want.
 
-For example: `linear_reg( engine = 'lm' )` or `linear_reg( engine = 'stan' )` are both linear model, the first uses `lm()` while the second uses the bayesian methods of the `stan` package.
+For example: `linear_reg( engine = 'lm' )` or `linear_reg( engine = 'stan' )` are both linear models, the first uses `lm()` while the second uses the Bayesian methods of the `stan` package.
 
-Then this model need to be `fit( <formula> , <data> )` (ike the `prep()` of recipes)
+Then this model needs to be `fit( <formula> , <data> )` (like the `prep()` of recipes)
 
 After that, you can use `predict()` with some data to get the prediction of your model.
 
 > A very useful resource: [searchable list of parsnip models](https://www.tidymodels.org/find/parsnip/)
+
+<!-- TBD: why use parsnip? -->
 
 ---
 
@@ -106,6 +106,8 @@ After that, you can use `predict()` with some data to get the prediction of your
 The score functions of yardstick usually come in two forms: 
 * the base form (e.g., `rsq`) expects a dataframe with specific columns (which is a standard output of tidymodels workflows)
 * the vector form (e.g., `rsq_vec`) expects 2 vectors: the truth, and the prediction
+
+<!-- TBD: why use yardstick? -->
 
 ---
 
@@ -117,6 +119,8 @@ lm_fit <- linear_reg() %>%
 
 pred = ( lm_fit %>% predict( new_data = X ) )$.pred
 
+range(residuals(lm_fit$fit)) # range(X$Flesh.Colour - pred) # residuals
+
 print(paste( "R-squared score: " ,
              rsq_vec(truth = X$Flesh.Colour, estimate = pred ) ))
 
@@ -125,7 +129,7 @@ print(paste( "Root mean squared error: " ,
 
 ```
 
-**Wow!!** this is a (near) perfect fit.
+**Wow!!** this is a perfect fit.
 
 
 
@@ -133,7 +137,7 @@ But if you know anything about biology, or data analysis, then you likely suspec
 
 Indeed, at the moment, our claim is that our model can predict flesh color perfectly (RMSE=0.0) from the normalized expression of these 200 genes.
 
-But, say we now have some colleagues who come to us with some new potato data:
+But, say we now have some colleagues who come to us with some newly sequenced potato data:
 
 ```{r}
 Xnew = dfTT[i2,]
@@ -179,27 +183,27 @@ In the case of a Least Square fit, the function you are minimizing looks like:
 
 $\sum_i (y_i-y\_pred_i))^2$
 
-, so the sum of squared difference between the observation and the predictions of your model.
+i.e. the sum of squared differences between the observation and the predictions of your model.
 
-And remember that our model is written in the following way
+And remember that our model is written in the following way:
 
 $$y\_pred_i = \beta_1 * X1_{i} + \beta_2 * X2_{i} + ... + \beta_n * Xn_{i} $$
 
 ------------------------------------------------------------------------
 
-**Regularization** is a way to reduce overfitting, and in the case of the linear model we do so by adding to this function a **penalization term which depends on coefficient weights** (*ie*, the $\beta_x$).
+**Regularization** is a way to reduce overfitting, and in the case of the linear model we apply it by adding to this function a **penalization term which depends on coefficient weights** (*ie*, the $\beta_x$).
 
 In brief, the stronger the coefficient, the higher the penalization. So only coefficients which bring more fit than penalization will be kept.
 
-> Note : we report here the formulas used in `scikit-learn` functions. Other libraries may have a different parameterization, but the concepts stay the same
+> Note : we report here the formulas used in `scikit-learn` functions. Other libraries may have a different parameterizations, but the concepts stay the same
 
-$\frac{1}{2n}\sum_i (y_i-f(\pmb X_i,\pmb{\beta}))^2 + \alpha\sum_{j}|\beta_{j}|$ , **l1 regularization** (Lasso) $\alpha$ being the weight that you put on that regularization
+* $\frac{1}{2n}\sum_i (y_i-f(\pmb X_i,\pmb{\beta}))^2 + \alpha\sum_{j}|\beta_{j}|$ , **l1 regularization** (Lasso), $\alpha$ being the weight that you put on the regularization
 
-$\sum_i (y_i-f(\pmb X_i,\pmb{\beta}))^2 + \alpha\sum_{j}\beta_{j}^{2}$ , **l2 regularization** (Ridge)
+* $\sum_i (y_i-f(\pmb X_i,\pmb{\beta}))^2 + \alpha\sum_{j}\beta_{j}^{2}$ , **l2 regularization** (Ridge)
 
-$\frac{1}{2n}\sum_i (y_i-f(\pmb X_i,\pmb{\beta}))^2 + \alpha\sum_{j}(\rho|\beta_{j}|+\frac{(1-\rho)}{2}\beta_{j}^{2})$ , **elasticnet**
+* $\frac{1}{2n}\sum_i (y_i-f(\pmb X_i,\pmb{\beta}))^2 + \alpha\sum_{j}(\rho|\beta_{j}|+\frac{(1-\rho)}{2}\beta_{j}^{2})$ , **elasticnet**
 
-For a deeper understanding of those notions, you may look at [datacamp tutorial](https://www.datacamp.com/community/tutorials/tutorial-ridge-lasso-elastic-net)
+For a deeper understanding of those notions, you may look at [this datacamp tutorial](https://www.datacamp.com/community/tutorials/tutorial-ridge-lasso-elastic-net).
 
 
 > NB: Regularization generalize to maximum likelihood contexts as well)
@@ -500,7 +504,7 @@ best_model
 
 ```{r}
 ## fitting model
-...
+
 
 
 
