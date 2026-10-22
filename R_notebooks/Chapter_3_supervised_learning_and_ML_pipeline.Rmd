@@ -77,9 +77,9 @@ We will be modelling the potato flesh color using a simple [linear model](https:
 
 $$flesh color = \beta_1 * E1 + \beta_2 * E2 + ... + \beta_n * En $$
 
-Where $Ex$ is the expression level of gene $x$, and $\beta_x$ is the associated coefficient (which describes how much the expression of gene $x$ contributes to the flesh color prediction).
+Where $Ex$ is the expression level of gene $x$, and $\beta_x$ is the associated coefficient, which describes how much the expression of gene $x$ contributes to the flesh color prediction.
 
-> It is very likely that you have already seen and manipulated linear models previously, and we are not going to develop much further here. But in case this is the first time you meet them, or you just want a refresher, here is a [jupyter notebook on linear models](https://github.com/sib-swiss/statistics-and-machine-learning-training/blob/main/01_regression_Least_Square.ipynb), from one of our other courses ;-)
+> It is very likely that you have already seen and manipulated linear models previously, and we are not going to develop them much further here. But in case this is the first time you meet them, or you just want a refresher, here is a [jupyter notebook on linear models](https://github.com/sib-swiss/statistics-and-machine-learning-training/blob/main/01_regression_Least_Square.ipynb), from one of our other courses ;-)
 
 ------------------------------------------------------------------------
 
