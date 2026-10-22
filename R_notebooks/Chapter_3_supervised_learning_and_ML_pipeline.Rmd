@@ -85,11 +85,11 @@ Where $Ex$ is the expression level of gene $x$, and $\beta_x$ is the associated 
 
 Let's fit a simple linear model with our gene expression values, and see what happens.
 
-For this, we will introduce some syntax elements from [parsnip](https://parsnip.tidymodels.org/) and [yardstick](https://yardstick.tidymodels.org/):
+For this, we will introduce some syntax elements from [parsnip](https://parsnip.tidymodels.org/) and [yardstick](https://yardstick.tidymodels.org/).
 
 ---
 
-With parsnip you instanciate a model from a broad family, and set its `engine`, which represents the specific implementation you want.
+With [parsnip](https://parsnip.tidymodels.org/) you instantiate a model from a broad family, and set its `engine`, which represents the specific implementation you want.
 
 For example: `linear_reg( engine = 'lm' )` or `linear_reg( engine = 'stan' )` are both linear models, the first uses `lm()` while the second uses the Bayesian methods of the `stan` package.
 
