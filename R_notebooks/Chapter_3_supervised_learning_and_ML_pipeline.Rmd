@@ -99,8 +99,6 @@ After that, you can use `predict()` with some data to get the prediction of your
 
 > A very useful resource: [searchable list of parsnip models](https://www.tidymodels.org/find/parsnip/)
 
-<!-- TBD: why use parsnip? -->
-
 ---
 
 [Yardstick](https://yardstick.tidymodels.org/) is about computing how well your models are doing: it implements all sorts of metrics, both for classification and regression.
@@ -109,8 +107,6 @@ The score functions of yardstick usually come in two forms:
 
 * the base form (e.g., `rsq`) expects a dataframe with specific columns (which is a standard output of tidymodels workflows)
 * the vector form (e.g., `rsq_vec`) expects 2 vectors: the truth, and the prediction
-
-<!-- TBD: why use yardstick? -->
 
 ---
 
@@ -131,7 +127,7 @@ print(paste( "Root mean squared error: " ,
              rmse_vec(truth = X$Flesh.Colour, estimate = pred ) ))
 
 ```
-<!-- I get a warning here -->
+
 **Wow!!!** This is a perfect fit!
 
 
@@ -175,7 +171,6 @@ To honestly report the performance of our model, we measure it on a **set of dat
 
 To that end, we typically begin by dividing our data into :
 
-<!-- TBD: Use more precise terms like total, development, validation, training and test sets? -->
 -   **train** set : find the best model
 -   **test** set : give an honest evaluation of how the model performs on completely new data.
 
@@ -249,7 +244,6 @@ p2 = ggplot( COEFS , aes(x=penalty,y=estimate, group = term, color=term)) +
   geom_line(show.legend = FALSE) + scale_x_log10() 
 grid.arrange(p1,p2, nrow=1)
 ```
-<!-- TBD: I get warnings when running this. -->
 On the left subplot you see how the R-squared score changes with $log10(\alpha)$.
 
 
@@ -294,7 +288,6 @@ In order to find the optimal value of an hyper-parameter, we can separate our or
  * a **train set** : used to fit the model;
  * a **validation set** : used to evaluate how our model performs on new data (generalises).
 
-<!-- TBD: add an illustration like the others (train vs test, k-fold CV) -->
 
 ```{r}
 ## to split our data into train and validation sets,
@@ -668,4 +661,4 @@ tidy( final_LR ) %>% filter(term != "(Intercept)") %>%
   head(n=10)
 ```
 
-<!-- TBD: no exercise? -->
+
