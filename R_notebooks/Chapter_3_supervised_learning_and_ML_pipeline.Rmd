@@ -20,9 +20,11 @@ library(tidymodels)
 
 In this chapter, we will use a simple regression case to introduce some **core concepts of Supervised Learning and Machine Learning**.
 
+Supervised Learning considers tasks where we want to predict a predefined target. If the target is categorical, it is a **classification task**. If the target is continuous, it is a **regression task**.
+
 ![Image showing the difference between classification (left) and regression (right). On the left, sets of red and blue points are separated by a black line which represents our model. In contrast, the regression model's line follows the point cloud.](../images/class_reg.png)
 
-Supervised Learning considers tasks where we want to predict a predefined target. If the target is categorical, it is a **classification task**. If the target is continuous, it is a **regression task**.
+-----
 
 Regression and classification use different models and optimize different metrics, but in Machine Learning they also share many common practices and concerns.
 
