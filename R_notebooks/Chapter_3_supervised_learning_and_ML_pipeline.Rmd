@@ -22,7 +22,7 @@ In this chapter, we will use a simple regression case to introduce some **core c
 
 Supervised Learning considers tasks where we want to predict a predefined target. If the target is categorical, it is a **classification task**. If the target is continuous, it is a **regression task**.
 
-![Image showing the difference between classification (left) and regression (right). On the left, sets of red and blue points are separated by a black line which represents our model. In contrast, the regression model's line follows the point cloud.](../images/class_reg.png)
+![Image showing the difference between classification (left) and regression (right). On the left, red and blue points are split by the classification model's black line. In contrast, on the right, the regression model's black line follows the point cloud.](../images/class_reg.png)
 
 -----
 
@@ -132,7 +132,7 @@ print(paste( "Root mean squared error: " ,
 
 ```
 <!-- I get a warning here -->
-**Wow!!** this is a perfect fit.
+**Wow!!!** This is a perfect fit!
 
 
 
@@ -163,26 +163,27 @@ ggplot(tmp , aes(x=Flesh.Colour , y = .pred , colour = set )) +
   geom_point()
 ```
 
-As expected, the performance on the new data is not as good as with the data we used to train the model.
+As expected, the performance on the new data is nowhere near as good as with the data we used to train the model.
 
 We have **overfitted** the data.
 
 ------------------------------------------------------------------------
 
-Here we could still use the model that we have created, but we would agree that reporting the perfect performance we had with our training data would be misleading.
+At this point, we could still use the model that we have created, but we would agree that reporting the perfect performance we had with our training data would be misleading.
 
 To honestly report the performance of our model, we measure it on a **set of data that has not been used at all to train it: the *test set*.**
 
 To that end, we typically begin by dividing our data into :
 
+<!-- TBD: Use more precise terms like total, development, validation, training and test sets? -->
 -   **train** set : find the best model
--   **test** set : give an honest evaluation of how the model perform on completely new data.
+-   **test** set : give an honest evaluation of how the model performs on completely new data.
 
-![train_test](../images/train_test.png)
+![Illustrating the data split into train and test sets](../images/train_test.png)
 
 ## approach 2: adding regularization and validation set
 
-In the case of a Least Square fit, the function you are minimizing (the "cost function") looks like:
+In the case of a Least Squares fit, the function you are minimizing (the "cost function") looks like:
 
 $$\sum_i (y_i-y\_pred_i))^2$$
 
@@ -198,15 +199,15 @@ $$y\_pred_i = \beta_1 * X1_{i} + \beta_2 * X2_{i} + ... + \beta_n * Xn_{i} $$
 
 In brief, the larger the coefficient, the higher the penalization. This way, only coefficients which bring more fit than penalization will be kept.
 
-> Note : we report here the formulas used in `scikit-learn` functions. Other libraries may have a different parameterizations, but the concepts stay the same.
+> Note : we report here the formulas used in `scikit-learn` functions. Other libraries may have different parameterizations, but the concepts stay the same.
 
-* **l1 regularization** (Lasso): $\frac{1}{2n}\sum_i (y_i-f(\pmb X_i,\pmb{\beta}))^2 + \alpha\sum_{j}|\beta_{j}|$, $\alpha$ being the weight that you put on the regularization
+* **l1 regularization** (Lasso): $\frac{1}{2n}\sum_i (y_i-f(\pmb X_i,\pmb{\beta}))^2 + \alpha\sum_{j}|\beta_{j}|$, $\alpha$ being the weight that you put on the regularization.
 
-* **l2 regularization** (Ridge): $\sum_i (y_i-f(\pmb X_i,\pmb{\beta}))^2 + \alpha\sum_{j}\beta_{j}^{2}$
+* **l2 regularization** (Ridge): $\sum_i (y_i-f(\pmb X_i,\pmb{\beta}))^2 + \alpha\sum_{j}\beta_{j}^{2}$.
 
 * **elasticnet**: $\frac{1}{2n}\sum_i (y_i-f(\pmb X_i,\pmb{\beta}))^2 + \alpha\sum_{j}(\rho|\beta_{j}|+\frac{(1-\rho)}{2}\beta_{j}^{2})$, where $\rho$ controls where the regularisation lands between l1 and l2.
 
-For a deeper understanding of those notions, you may look at [this datacamp tutorial](https://www.datacamp.com/community/tutorials/tutorial-ridge-lasso-elastic-net).
+For a deeper understanding of these notions, you may look at [this datacamp tutorial](https://www.datacamp.com/community/tutorials/tutorial-ridge-lasso-elastic-net).
 
 
 > NB: Regularization generalize to maximum likelihood contexts as well.
@@ -288,14 +289,15 @@ Consequently, we cannot choose the value of $\alpha$ parameter from the fitted d
 ---
 
 
-In order to find the optimal value of an hyper-parameter, we can separate our training data into:
+In order to find the optimal value of an hyper-parameter, we can separate our original "train" data into:
 
- * a **training set** : used to fit the model;
+ * a **train set** : used to fit the model;
  * a **validation set** : used to evaluate how our model performs on new data (generalises).
 
+<!-- TBD: add an illustration like the others (train vs test, k-fold CV) -->
 
 ```{r}
-## to split our training data into training and validation sets,
+## to split our data into train and validation sets,
 ## we will use initial_split() from package rsample:
 split <- initial_split(X, prop = 0.7)
 
@@ -339,12 +341,12 @@ p + geom_vline(xintercept = best_penalty$log10_penalty ) +
 
 So now, with the help of a validation set, we can clearly see the phases :
 
- * **underfitting** : for high $\alpha$, the performance is low for both the training and the validation sets
- * **overfitting** : for low $\alpha$, the performance is high for the training set, and low for the validation set
+ * **underfitting** : for high $\alpha$, the performance is low for both the train and the validation sets
+ * **overfitting** : for low $\alpha$, the performance is high for the train set, and low for the validation set
 
 We want the equilibrium point between the two, where performance is ideal for the validation set.
 
-**Problem :** if you run the code above several times, you will see that the optimal point varies due to the random assignation to training or validation set.
+**Problem :** if you run the code above several times, you will see that the optimal point varies due to the random assignation to train or validation set.
 
 There exists a myriad of possible strategies to deal with this problem, such as repeating the above many times and taking the average of the results.
 
@@ -389,7 +391,7 @@ ggplot(tmp , aes(x=Flesh.Colour , y = .pred , colour = set )) +
 
 ## approach 3: k-fold cross-validation
 
-In the previous approach, we split our data into a training set and a validation set.
+In the previous approach, we split our original train data into a train set and a validation set.
 
 This approach works well if you have enough data for your validation set to be representative.
 
@@ -397,10 +399,9 @@ Often, we unfortunately do not have enough data for this.
 
 Indeed, we have seen that if we run the code above several times, the optimal point varies due to the random assignation to training or validation set.
 
-**K-fold cross validation** is one of the most common strategies to try to mitigate this randomness with a limited amount of data.
+**K-fold cross validation** is one of the most common strategies to try to mitigate this randomness with a limited amount of data. The main idea is to perform the split several differnt times.
 
 ![k-fold cross validation](../images/kfold.png)
-<!-- TBD: this image is incorrect AFAICT -->
 
 In k-fold cross-validation:
 
@@ -544,14 +545,14 @@ or how we perform scaling, or whether we consider interactions, etc... and now y
 We will start back from scratch to recapitulate what we've seen and use tidymodel's helpful recipes to solve the potato problem.
 
 
-We start by splitting our data in a training and a test set:
+We start by splitting our data in a train and a test set:
 
 ```{r}
 split <- initial_split(dfTT, prop = 0.7)
 X_train <- training(split)
 X_test  <- testing(split)
 
-print(paste("training set size:",nrow(X_train)))
+print(paste("train set size:",nrow(X_train)))
 print(paste("test set size:" ,nrow(X_test)))
 ```
 
