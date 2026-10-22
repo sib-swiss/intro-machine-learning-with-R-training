@@ -106,6 +106,7 @@ After that, you can use `predict()` with some data to get the prediction of your
 [Yardstick](https://yardstick.tidymodels.org/) is about computing how well your models are doing: it implements all sorts of metrics, both for classification and regression.
 
 The score functions of yardstick usually come in two forms: 
+
 * the base form (e.g., `rsq`) expects a dataframe with specific columns (which is a standard output of tidymodels workflows)
 * the vector form (e.g., `rsq_vec`) expects 2 vectors: the truth, and the prediction
 
@@ -130,7 +131,7 @@ print(paste( "Root mean squared error: " ,
              rmse_vec(truth = X$Flesh.Colour, estimate = pred ) ))
 
 ```
-
+<!-- I get a warning here -->
 **Wow!!** this is a perfect fit.
 
 
