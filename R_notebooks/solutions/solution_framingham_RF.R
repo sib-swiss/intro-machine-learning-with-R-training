@@ -67,7 +67,7 @@ best_model <- framingham_RF_res %>% select_best(metric = "roc_auc")
 
 final_RF <- framingham_wf %>% 
   finalize_workflow(best_model) %>% # apply hyper-parameters
-  last_fit(split)                   # fit with the train data
+  last_fit(split)                   # fit with the training data
 
 print(final_RF %>%
   collect_metrics() )

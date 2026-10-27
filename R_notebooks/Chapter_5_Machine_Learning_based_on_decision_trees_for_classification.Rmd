@@ -282,7 +282,7 @@ best_model <- breast_DT_res %>% select_best(metric = "roc_auc")
 
 final_DT <- breast_wf %>% 
   finalize_workflow(best_model) %>% # apply hyper-parameters
-  last_fit(split)                   # fit with the train data
+  last_fit(split)                   # fit with the training data
 
 final_DT %>%
   collect_metrics()
@@ -424,7 +424,7 @@ best_model <- breast_RF_res %>% select_best(metric = "roc_auc")
 
 final_RF <- breast_wf %>% 
   finalize_workflow(best_model) %>% # apply hyper-parameters
-  last_fit(split)                   # fit with the train data
+  last_fit(split)                   # fit with the training data
 
 final_RF %>%
   collect_metrics()

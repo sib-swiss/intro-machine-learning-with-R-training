@@ -111,7 +111,7 @@ best_model <- LR_res %>% select_best(metric = "roc_auc")
 
 final_LR <- LR_wf %>% 
   finalize_workflow(best_model) %>% # apply hyper-parameters
-  last_fit(split) %>%               # fit with the train data
+  last_fit(split) %>%               # fit with the training data
   extract_workflow(final_fit)       # extract the workflow
 
 truth = heart_test$TenYearCHD

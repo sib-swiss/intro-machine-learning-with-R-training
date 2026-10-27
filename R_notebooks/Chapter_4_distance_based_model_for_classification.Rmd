@@ -402,7 +402,7 @@ The **test set should never be touched until the last step which is the model ev
 
 By doing so we can be confident that our evaluation of the **ability of our model to generalize to new data** is as fair as it can be.
 
-We say that no information coming from the test set should leak into the train set. If this is the case, we are biasing our understanding of the generalizability of our model.
+We say that no information coming from the test set should leak into the training set. If this is the case, we are biasing our understanding of the generalizability of our model.
 
 To avoid **leakage** you should ensure your test set is absent from even the early stages of your pipeline, such as imputation, normalization, or feature selection.
 
@@ -665,7 +665,7 @@ best_model <- breast_LR_res %>% select_best(metric = "accuracy")
 
 final_LR <- breast_wf %>% 
   finalize_workflow(best_model) %>% # apply hyper-parameters
-  last_fit(split) %>%               # fit with the train data
+  last_fit(split) %>%               # fit with the training data
   extract_workflow(final_fit)       # extract the workflow
 
 

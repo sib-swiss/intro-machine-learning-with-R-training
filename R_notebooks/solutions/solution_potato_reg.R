@@ -3,7 +3,7 @@ split <- initial_split(dfTT, prop = 0.7)
 X_train <- training(split)
 X_test  <- testing(split)
 
-print(paste("train set size:",nrow(X_train)))
+print(paste("training set size:",nrow(X_train)))
 print(paste("test set size:" ,nrow(X_test)))
 
 

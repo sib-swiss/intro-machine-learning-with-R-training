@@ -285,7 +285,7 @@ Consequently, we cannot choose the value of $\alpha$ parameter from the fitted d
 
 In order to find the optimal value of an hyper-parameter, we can separate our original "train" data into:
 
- * a **train set** : used to fit the model;
+ * a **training set** : used to fit the model;
  * a **validation set** : used to evaluate how our model performs on new data (generalises).
 
 
@@ -335,7 +335,7 @@ p + geom_vline(xintercept = best_penalty$log10_penalty ) +
 So now, with the help of a validation set, we can clearly see the phases :
 
  * **underfitting** : for high $\alpha$, the performance is low for both the train and the validation sets
- * **overfitting** : for low $\alpha$, the performance is high for the train set, and low for the validation set
+ * **overfitting** : for low $\alpha$, the performance is high for the training set, and low for the validation set
 
 We want the equilibrium point between the two, where performance is ideal for the validation set.
 
@@ -384,7 +384,7 @@ ggplot(tmp , aes(x=Flesh.Colour , y = .pred , colour = set )) +
 
 ## approach 3: k-fold cross-validation
 
-In the previous approach, we split our original train data into a train set and a validation set.
+In the previous approach, we split our original training data into a training set and a validation set.
 
 This approach works well if you have enough data for your validation set to be representative.
 
@@ -545,7 +545,7 @@ split <- initial_split(dfTT, prop = 0.7)
 X_train <- training(split)
 X_test  <- testing(split)
 
-print(paste("train set size:",nrow(X_train)))
+print(paste("training set size:",nrow(X_train)))
 print(paste("test set size:" ,nrow(X_test)))
 ```
 
