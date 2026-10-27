@@ -72,6 +72,7 @@ The well-known "iris" dataset that comes within base R, with 4 different floral 
 data(iris)
 iris %>% head()
 ```
+
 ```{r}
 iris_recipe = recipe( iris , Species ~ . ) %>%
     step_normalize( all_numeric_predictors() ) %>%
@@ -92,34 +93,28 @@ ggbiplot(prcomp_obj,
          )
 ```
 
-
-
-# Clustering 
-
+# Clustering
 
 Clustering is an unsupervised method that serves many purposes:
 
-  * Pattern detection: discover hidden patterns in your data
-  * Compression: replace all cluster members by one representative
-  * Denoising: replace noisy feature vectors by the cluster consensus vector
-  * Dimensionality reduction: replace a feature vector by cluster similarities
-  * Outlier detection: detect samples which sit far away from cluster centers
-  * ...
+- Pattern detection: discover hidden patterns in your data
+- Compression: replace all cluster members by one representative
+- Denoising: replace noisy feature vectors by the cluster consensus vector
+- Dimensionality reduction: replace a feature vector by cluster similarities
+- Outlier detection: detect samples which sit far away from cluster centers
+- ...
 
-
-If you find some cluster-like structures in your data that correspond to one of your hypotheses then you're on the right track! 
-Often you need to carefully clean and normalize your data to discover these structures. 
+If you find some cluster-like structures in your data that correspond to one of your hypotheses then you're on the right track! Often you need to carefully clean and normalize your data to discover these structures.
 
 Be aware that clustering algorithms are not magical techniques that give you a straight answer: you will need to find good hyperparameters for the model to work, and your expertise and understanding of the data is crucial to obtain good results.
 
 Moreover, you will see that the very definition of a **cluster** can change depending on the data and objective(s).
 
-
 ## K-means clustering
 
 ### basics
-The [k-means](https://rdrr.io/r/stats/kmeans.html) algorithm is a widely-used clustering algorithm. 
 
+The [k-means](https://rdrr.io/r/stats/kmeans.html) algorithm is a widely-used clustering algorithm.
 
 [Allison Horst k-means visual explanation](https://allisonhorst.com/k-means-clustering)
 
@@ -129,31 +124,29 @@ $\pmb{C}=argmin_{\pmb{C}} \sum_{k=1}^{K}\sum_{i \in C_k}||\pmb{X_i}-\pmb{\mu_k}|
 
 $\pmb{\mu_k}=\frac{1}{|C_k|}\sum_{i \in C_k}\pmb{X_i}$
 
-K-means requires k, a given number of clusters, as parameter. 
+K-means requires k, a given number of clusters, as parameter.
 
 The algorithm consists of 2 main steps:
 
- 1. *Initialise*: Choose $K$ points from $\pmb{X_i}$ as initial values for $\pmb{\mu_k}$. These initial points should be spread out over the dataset.
- 2a. *Update step*: compute the centroids $\pmb{\mu_k}=\frac{1}{|C_k|}\sum_{i \in C_k}\pmb{X_i}$
- 2b. *Assignment step*: assign each $\pmb{X_i}$ to a cluster $C_k=argmin_{C_k} ||\pmb{X_i}-\pmb{\mu_k}||^2$
- 3. *Iterate*: Iterate *update* & *assignment* steps until convergence
-
+1.  *Initialise*: Choose $K$ points from $\pmb{X_i}$ as initial values for $\pmb{\mu_k}$. These initial points should be spread out over the dataset. 2a. *Update step*: compute the centroids $\pmb{\mu_k}=\frac{1}{|C_k|}\sum_{i \in C_k}\pmb{X_i}$ 2b. *Assignment step*: assign each $\pmb{X_i}$ to a cluster $C_k=argmin_{C_k} ||\pmb{X_i}-\pmb{\mu_k}||^2$
+2.  *Iterate*: Iterate *update* & *assignment* steps until convergence
 
 ### example on iris
+
 ```{r}
 iris_km = kmeans( iris_pca %>% select(starts_with("PC")) , centers = 3 )
 iris_km
 ```
 
- * **cluster** indicates the cluster to which each point is allocated
- * **centers** matrix of cluster centers
- * **totss** total sum of squares
- * **withinss** within-cluster sum of squares, one component per cluster
- * **tot.withinss** total within-cluster sum of squares, i.e. sum(withinss)
- * **betweenss** between-cluster sum of squares, i.e. totss-tot.withinss
- * **size** the number of points in each cluster
- * **iter** number of iterations
- * **ifault**	indicator of a possible algorithm problem – for experts.
+- **cluster** indicates the cluster to which each point is allocated
+- **centers** matrix of cluster centers
+- **totss** total sum of squares
+- **withinss** within-cluster sum of squares, one component per cluster
+- **tot.withinss** total within-cluster sum of squares, i.e. sum(withinss)
+- **betweenss** between-cluster sum of squares, i.e. totss-tot.withinss
+- **size** the number of points in each cluster
+- **iter** number of iterations
+- **ifault** indicator of a possible algorithm problem – for experts.
 
 ```{r}
 ggplot(iris_pca , aes( x=PC1 , y=PC2 , 
@@ -161,14 +154,14 @@ ggplot(iris_pca , aes( x=PC1 , y=PC2 ,
                        pch = Species)) +
     geom_point()
 ```
+
 ```{r}
 table( iris$Species , iris_km$cluster )
 ```
 
-
 ### initialisations
-K-means is a "greedy" algorithm, i.e. it will only find a local minimum of the inertia at each step. 
-It is therefore good practice to run the algorithm several times with different initializations.
+
+K-means is a "greedy" algorithm, i.e. it will only find a local minimum of the inertia at each step. It is therefore good practice to run the algorithm several times with different initializations.
 
 In R, the [k-means implementation](https://rdrr.io/r/stats/kmeans.html) uses a `nstart` parameter to launch the algorithm with different initializations (the default is 1).
 
@@ -183,15 +176,13 @@ ggplot(iris_pca , aes( x=PC1 , y=PC2 ,
 
 For this simple dataset, this is unlikely to matter much, but it is nevertheless good practice to have several starts.
 
-
 ### considerations
 
 **Important remarks:**
 
- - K-means is based on a concept of distances : your **data needs to be properly scaled**.
- - K-means creates, by construction, **globular clusters**.
- - K-means results depends on parameter **K**.
-
+- K-means is based on a concept of distances : your **data needs to be properly scaled**.
+- K-means creates, by construction, **globular clusters**.
+- K-means results depends on parameter **K**.
 
 #### What values should we give to parameter K?
 
@@ -214,11 +205,11 @@ iris_pca %>%
 
 ```
 
-We see that the number of clusters defines the k-means clustering outcome. It is difficult to say, looking at the projections, whether 2 or 3 clusters better reveal underlying patterns of the data. 
+We see that the number of clusters defines the k-means clustering outcome. It is difficult to say, looking at the projections, whether 2 or 3 clusters better reveal underlying patterns of the data.
 
 To help us choose, we can compare the clusterings proposed by different values of K using clustering quality metrics.
- 
----
+
+------------------------------------------------------------------------
 
 ### Adjusted Rand Index
 
@@ -229,15 +220,14 @@ In one case, we could **use known categories**, like the species for the iris ex
 An eample of such metric is the **Adjusted Rand Index** (ARI) which computes the similarity between two cluster assignments.
 
 The unadjusted version is computed with:
- * $s$ : the number of pairs of objects which have the same cluster in clustering 1 and the same in clustering 2 too
- * $d$ : the number of pairs of objects which have different clusters in clustering 1 and different clusters in clustering 2 too
- * $p$ : the total number of possible pairs of objects
+
+- $s$ : the number of pairs of objects which have the same cluster in clustering 1 and the same in clustering 2 too
+- $d$ : the number of pairs of objects which have different clusters in clustering 1 and different clusters in clustering 2 too
+- $p$ : the total number of possible pairs of objects
 
 $$RI = \frac{s+d}{p}$$
 
 The "Adjusted" version corresponds to a normalization that ensures that random clusterings give a value close to 0 and perfectly concordant clusterings a value of 1.
-
-
 
 ```{r}
 ## ARI example
@@ -261,10 +251,10 @@ In the more common case, where we do not know the categories in advance, we woul
 
 Here we will use the **silhouette score** metric.
 
-The **silhouette score** is **calculated for each point** using 
+The **silhouette score** is **calculated for each point** using
 
-* the mean intra-cluster distance : $a$
-* the distance between a sample and the nearest cluster that the sample is not a part of : $b$
+- the mean intra-cluster distance : $a$
+- the distance between a sample and the nearest cluster that the sample is not a part of : $b$
 
 ![silhouette illustration](../images/silhouette.png)
 
@@ -278,11 +268,9 @@ So the **silhouette score should be maximized.**
 
 The `bluster` function `approxSilhouette` returns the Silhouette score of all samples for a given clustering result (the value is approximated in order to keep the computation tractable).
 
-
---- 
+------------------------------------------------------------------------
 
 Let's try to apply this logic to the iris dataset.
-
 
 ```{r}
 km3 = kmeans( iris_pca %>% select(starts_with("PC")) , 
@@ -304,9 +292,9 @@ sil
 
 For each point:
 
- * `cluster`: assigned cluster
- * `other`: closest non-assigned cluster
- * `width`: silhouette score
+- `cluster`: assigned cluster
+- `other`: closest non-assigned cluster
+- `width`: silhouette score
 
 We can actually look at the average silhouette score to get a score for the whole clustering, or look at individual values (which could help flag outliers, unstable clusters, ...)
 
@@ -314,15 +302,14 @@ We can actually look at the average silhouette score to get a score for the whol
 ggplot( sil , aes( x = as.factor( cluster ) , y = width ) ) + geom_boxplot()
 ```
 
-Here we can see that almost all points have a silhouette > 0 (which means the point is on average closest to its own cluster than another).
-
+Here we can see that almost all points have a silhouette \> 0 (which means the point is on average closest to its own cluster than another).
 
 ```{r}
 ## average silhouette score
 sil$width %>% mean()
 ```
 
----
+------------------------------------------------------------------------
 
 **How does this helps us decide on a good value for K?**
 
@@ -338,10 +325,10 @@ km_sweep
 ```
 
 We have all the clusterings in the resulting object:
+
 ```{r}
 km_sweep$clusters
 ```
-
 
 ```{r}
 ## compute silhouette
@@ -362,7 +349,6 @@ scores = data.frame( K = 2:9,
 scores
 ```
 
-
 ```{r fig.width=8, fig.height=4}
 p1 <- ggplot( scores , aes( x = K, y = silhouette ) ) + geom_line()
 p2 <- ggplot( scores , aes( x = K, y = ARI ) ) + geom_line()
@@ -382,7 +368,6 @@ ggplot( iris_pca , aes( x = PC1 , y = PC2 ) ) + geom_point()
 ### Micro-exercise: k-means
 
 Perform a k-means clustering on the AML data. What is the best number of clusters ? Does it looks like it correlates with the auc column ?
-
 
 > **NOTE:** we do not have a reference clustering here, so don't compute the ARI
 
@@ -405,10 +390,7 @@ df_aml_pca %>% head()
 
 ```
 
-
 Solution in `solutions/solution_Kmean.R`
-
-
 
 ## Hierarchical clustering
 
@@ -424,22 +406,21 @@ The main advantage of the algorithm is interpretability and the visualization of
 
 `hclust` proposes a number of options regarding how to compute the distance between clusters via the `method` argument:
 
-* `ward.D2` minimizes the within-cluster variance.
-* `average` uses the average of the distances of each observation of the two clusters
-* `complete` (or maximum) linkage uses the maximum distance between all observations of the two clusters
-* `single` linkage uses the minimum of the distances between all observations of the two clusters
-
+- `ward.D2` minimizes the within-cluster variance.
+- `average` uses the average of the distances of each observation of the two clusters
+- `complete` (or maximum) linkage uses the maximum distance between all observations of the two clusters
+- `single` linkage uses the minimum of the distances between all observations of the two clusters
 
 ### Experimenting with different linkages
 
 Let's take a moment to think on the implication these choice of linkage could have when clustering.
 
+The "Moons" toy dataset: 2 2-dimensional crescent-shaped distributions of points that a human can easily classify into 2 groups... But computers struggle!
 
-The "Moons" toy dataset: 2 2-dimensional creascent-shaped distributions of points that a human can easily classify into 2 groups... But computers struggle!
 ```{r}
 df_moons = read.csv( "../data/moons.csv" )
 df_moons$y = as.factor(df_moons$y)
-ggplot( df_moons , aes( x = x1 , y = x2 , col = y ) ) + geom_point()
+ggplot( df_moons , aes( x = x1 , y = x2 ) ) + geom_point()
 ```
 
 ```{r}
@@ -454,7 +435,6 @@ h_average  = hclust(d, method = 'average')
 ```
 
 For plotting the dendrogram, we will use [dendextend](https://cran.r-project.org/web/packages/dendextend/vignettes/Cluster_Analysis.html)
-
 
 ```{r fig.width=12, fig.height=4}
 par(mfrow=c(1,3))
@@ -479,8 +459,7 @@ cluster = cutree( h_complete , k = 2 )
 ggplot( df_moons , aes( x = x1 , y = x2 , col = as.factor(cluster) ) ) + geom_point()
 ```
 
----
-
+------------------------------------------------------------------------
 
 ### Hierarchical clustering of the iris dataset
 
@@ -528,6 +507,7 @@ km_sweep = clusterSweep( iris_pca %>% select(starts_with("PC")) ,
                          
 
 ```
+
 ```{r fig.width=12, fig.height=4}
 ## compute silhouette
 sil <- vapply(as.list(km_sweep$clusters), 
@@ -552,27 +532,23 @@ p2 <- ggplot( scores , aes( x = K, y = ARI, col = method ) ) + geom_line()
 grid.arrange(p1, p2, ncol=2)
 ```
 
----
+------------------------------------------------------------------------
 
 Last but not least, hierarchical clustering is very common in **heatmaps**:
-
 
 ```{r fig.width=5, fig.height=7}
 heatmap.2( as.matrix( iris[,-5] ) , cexCol = 1, margins=c(6, 1), labRow = NA )
 ```
 
+## What is the best method for clustering ?
 
-## What is the best method for clustering ? 
-
-As you surely suspect by now, there is no perfect method. 
-Each algorithm makes different assumptions about the structure of your data and its performance depends on how your data is actually structured.
+As you surely suspect by now, there is no perfect method. Each algorithm makes different assumptions about the structure of your data and its performance depends on how your data is actually structured.
 
 Let's demonstrate by displaying how different algorithms perform on different datasets (example adapted from the [sklearn documentation](https://scikit-learn.org/stable/auto_examples/cluster/plot_cluster_comparison.html)):
 
 ![](https://scikit-learn.org/stable/_images/sphx_glr_plot_cluster_comparison_001.png)
 
-
-## Exercise: EDA and Clustering - single cell RNAseq data 
+## Exercise: EDA and Clustering - single cell RNAseq data
 
 Data from: [Li H, Courtois ET, Sengupta D, Tan Y et al. Reference component analysis of single-cell transcriptomes elucidates cellular heterogeneity in human colorectal tumors. Nat Genet 2017 May;49(5):708-718. PMID: 28319088](https://pubmed.ncbi.nlm.nih.gov/28319088/)
 
@@ -582,20 +558,21 @@ For convenience, the cell lines have been associated to colors.
 
 In the data table:
 
- * columns are genes
- * rows are cells
- 
+- columns are genes
+- rows are cells
+
 You can presume that the data has already been properly normalized, scaled, and imputed.
- 
+
 **code for reading the data:**
 
-<!-- Perhaps use fread to load this in faster? -->
 ```{r}
 ## reading the data
-X_rpkm <- read.csv( "../data/GSE81861_log10_RPKM.filtered.csv" , row.names = 1 )
+library(data.table)
+X_rpkm <- fread( "../data/GSE81861_log10_RPKM.filtered.csv", data.table=FALSE )
+row.names( X_rpkm ) <- X_rpkm$V1
+X_rpkm <- X_rpkm[,-1]
 X_rpkm[1:5,1:5] # top left corner
 ```
-
 
 ```{r}
 dim(X_rpkm) ## 561 cells, 7980 genes
@@ -608,14 +585,13 @@ table( index_colors )
 
 Instructions:
 
- 1. perform a PCA and visualize the results, only keep 500 components.
- 2. try to cluster the cells using k-means or hierarchical clustering. 
-     Try several parameter values and evaluate your clustering with a metric.
- 3. try the same thing, but use only the 50 first PCA components. Do you get better results?
+1.  perform a PCA and visualize the results, only keep 500 components.
+2.  try to cluster the cells using k-means or hierarchical clustering. Try several parameter values and evaluate your clustering with a metric.
+3.  try the same thing, but use only the 50 first PCA components. Do you get better results?
 
----
+------------------------------------------------------------------------
 
- 1. perform a PCA and visualize the results, only keep 500 components
+1.  perform a PCA and visualize the results, only keep 500 components
 
 > *Hint:* use `step_pca` and set the `num_comp` argument
 
@@ -624,21 +600,16 @@ Instructions:
 
 ```
 
-
- 2. try to cluster the cells using k-means or hierarchical clustering. 
-     Try several parameter values and evaluate your clustering with a metric.
-    
-
+2.  try to cluster the cells using k-means or hierarchical clustering. Try several parameter values and evaluate your clustering with a metric.
 
 ```{r}
 ## your clustering code here
 
 ```
 
- 3. try the same thing, but use only the 50 first PCA components. Do you get better results?
- 
- > *Hint:* use `step_pca` and set the `num_comp` argument
+3.  try the same thing, but use only the 50 first PCA components. Do you get better results?
 
+> *Hint:* use `step_pca` and set the `num_comp` argument
 
 ```{r}
 ## your PCA code here
