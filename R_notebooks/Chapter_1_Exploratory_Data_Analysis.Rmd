@@ -50,7 +50,7 @@ In the context of tidymodels, this will also give us the possibility to start di
 
 ### reading the data
 
-In this intoduction we are using a yeast Phospho-proteomics dataset [Plank et al. MCP, 2020](https://doi.org/10.1074/mcp.RA120.001955).
+In this introduction we are using a yeast Phospho-proteomics dataset [Plank et al. MCP, 2020](https://doi.org/10.1074/mcp.RA120.001955).
 The study performed a LC-MS/MS experiment and label-free quantitation to study the effect of AGC-kinase (Sch9, Pka1, Ypk1) inhibition on the phosphoproteome.
 5 yeast strains were used: WT, and Sch9, Pka1, Sch9&Pka1, Ypk1 mutant strains.
 Sch9, Pka1, Ypk1 were mutated in order to allow the 1NMPP1 molecule to bind to the mutant protein and inhibit its active site.
