@@ -671,7 +671,8 @@ final_LR <- breast_wf %>%
 
 final_LR %>% 
   extract_fit_parsnip() %>% 
-  vip()
+  vi()# vip() for plotting
+
 ```
 
 
