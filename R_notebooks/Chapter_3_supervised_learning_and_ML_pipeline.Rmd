@@ -171,10 +171,10 @@ To honestly report the performance of our model, we measure it on a **set of dat
 
 To that end, we typically begin by dividing our data into :
 
-- **train** set : find the best model
+- **training** set : find the best model
 - **test** set : give an honest evaluation of how the model performs on completely new data.
 
-![Illustrating the data split into train and test sets](../images/train_test.png)
+![Illustrating the data split into training and test sets](../images/train_test.png)
 
 ## approach 2: adding regularization and validation set
 
@@ -237,6 +237,8 @@ for( log10_penalty in  log10_penalties){
 
 ```
 
+> We get some warning resulting from the models where all coefficients are 0. They are not a cause for concern here.
+
 ```{r fig.width=10, fig.height=5}
 p1 = ggplot( data.frame( RSQ=RSQ , log10_penalty = log10_penalties ) , aes(x=log10_penalty,y=RSQ))+geom_line()
 p2 = ggplot( COEFS , aes(x=penalty,y=estimate, group = term, color=term)) + 
@@ -258,7 +260,7 @@ The right subplot confirms this interpretation, as it shows the coefficients val
 
 ------------------------------------------------------------------------
 
-**Micro-exercise:** adapt the code above to generate this plot with an l2 penalty and make the penalty go from 100 to 10'000 . How do you interpret the difference?
+**Micro-exercise:** adapt the code above to generate this plot with an L2 penalty and make the penalty go from 100 to 10'000 . How do you interpret the difference?
 
 ```{r}
 ## your code here
@@ -281,10 +283,10 @@ Consequently, we cannot choose the value of $\alpha$ parameter from the fitted d
 In order to find the optimal value of an hyper-parameter, we can separate our original "train" data into:
 
 - a **training set** : used to fit the model;
-- a **validation set** : used to evaluate how our model performs on new data (generalises).
+- a **validation set** : used to evaluate how our model performs on new data (ie. how it generalizes).
 
 ```{r}
-## to split our data into train and validation sets,
+## to split our data into training and validation sets,
 ## we will use initial_split() from package rsample:
 split <- initial_split(X, prop = 0.7)
 
@@ -328,12 +330,12 @@ p + geom_vline(xintercept = best_penalty$log10_penalty ) +
 
 So now, with the help of a validation set, we can clearly see the phases :
 
-- **underfitting** : for high $\alpha$, the performance is low for both the train and the validation sets
+- **underfitting** : for high $\alpha$, the performance is low for both the training and the validation sets
 - **overfitting** : for low $\alpha$, the performance is high for the training set, and low for the validation set
 
 We want the equilibrium point between the two, where performance is ideal for the validation set.
 
-**Problem :** if you run the code above several times, you will see that the optimal point varies due to the random assignation to train or validation set.
+**Problem :** if you run the code above several times, you will see that the optimal point varies due to the random assignation to training or validation set.
 
 There exists a myriad of possible strategies to deal with this problem, such as repeating the above many times and taking the average of the results.
 
@@ -341,14 +343,10 @@ There exists a myriad of possible strategies to deal with this problem, such as 
 
 ------------------------------------------------------------------------
 
-<br>
-
 Anyhow, on top of our earlier regression model, we have added :
 
 - a **hyper-parameter**, $\alpha$, the strength of the regularization term
 - a **validation strategy** for our model in order to avoid overfitting
-
-<br>
 
 That's it, we are now in the world of Machine Learning!
 
@@ -386,7 +384,7 @@ Often, we unfortunately do not have enough data for this.
 
 Indeed, we have seen that if we run the code above several times, the optimal point varies due to the random assignation to training or validation set.
 
-**K-fold cross validation** is one of the most common strategies to try to mitigate this randomness with a limited amount of data. The main idea is to perform the split several differnt times.
+**K-fold cross validation** is one of the most common strategies to try to mitigate this randomness with a limited amount of data. The main idea is to perform the split several different times.
 
 ![k-fold cross validation](../images/kfold.png)
 
@@ -500,7 +498,7 @@ best_model
 ```{r}
 ## fitting model
 
-
+## ... your code here
 
 
 ### here I am re-using the code from before to compute and display performance on the train and test sets
@@ -531,7 +529,7 @@ Now, consider that we have other hyper-parameters, such as the type of regulariz
 
 We will start back from scratch to recapitulate what we've seen and use tidymodel's helpful recipes to solve the potato problem.
 
-We start by splitting our data in a train and a test set:
+We start by splitting our data in a training and a test set:
 
 ```{r}
 split <- initial_split(dfTT, prop = 0.7)
