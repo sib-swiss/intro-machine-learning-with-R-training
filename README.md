@@ -32,13 +32,15 @@ You will also need to have installed the following packages:
  * recipes
  * rpart.plot
  * themis
- * vip
  * umap
 
 **from Bioconductor** (install with `BiocManager::install`)
 
  * bluster
 
+**from r-universe**: 
+
+ * vip (install with `install.packages('vip', repos = c('https://bgreenwell.r-universe.dev', 'https://cloud.r-project.org'))`)
 
 This can be done by running the code:
 
@@ -46,8 +48,9 @@ This can be done by running the code:
 install.packages(c(
   "BiocManager", "dendextend", "dplyr", "ggplot2", "GGally", "ggbiplot", "gplots",
   "gridExtra", "important", "pheatmap", "ranger", "RColorBrewer", "stringr", "tidyr", 
-  "tidymodels", "recipes", "rpart.plot", "themis", "vip", "umap"))
+  "tidymodels", "recipes", "rpart.plot", "themis", "umap"))
 BiocManager::install("bluster")
+install.packages('vip', repos = c('https://bgreenwell.r-universe.dev', 'https://cloud.r-project.org'))
 ```
 
 ## course organization
