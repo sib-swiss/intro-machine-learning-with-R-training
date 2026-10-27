@@ -26,13 +26,33 @@ The main library we will be using for machine learning is [tidymodels](https://w
 
 Tidymodels is actually a collection of packages handling different facets of Machine Learning:
 
--   [recipes](https://recipes.tidymodels.org/): handles data pre-processing
--   [parsnip](https://parsnip.tidymodels.org/): provides a unified interface for models
--   [rsamples](https://rsample.tidymodels.org/): handles re-sampling, bootstrapping, cross-validation, ...
--   [tune](https://tune.tidymodels.org/): handles hyper-parameter tuning
--   [yardstick](https://yardstick.tidymodels.org/): handles performance metrics
+- [recipes](https://recipes.tidymodels.org/): handles data pre-processing
+- [parsnip](https://parsnip.tidymodels.org/): provides a unified interface for models
+- [rsamples](https://rsample.tidymodels.org/): handles re-sampling, bootstrapping, cross-validation, ...
+- [tune](https://tune.tidymodels.org/): handles hyper-parameter tuning
+- [yardstick](https://yardstick.tidymodels.org/): handles performance metrics
 
 We will introduce the main interfaces and behaviour of all these libraries, but you can expect to spend a bit more time in their documentation over the next two days, as well as during your ML work afterward.
+
+## Datasets for this chapter
+
+In this chapter we will explore and demonstrate the techniques using several datasets.
+
+A **Phospho-proteomics dataset**:
+
+- [Plank et al. MCP, 2020](https://doi.org/10.1074/mcp.RA120.001955).
+- yeast Phospho-proteomics, LC-MS/MS experiment and label-free quantitation
+- 10 conditions:
+  - 5 yeast strains: WT, and Sch9, Pka1, Sch9&Pka1, Ypk1 mutant strains.
+  - 2 compound: DMSO, and 1NMPP1
+- All conditions were repeated in 3 technical replicates.
+
+An **Immunogenicity dataset**:
+
+- [Stronen et al., Science, 2016](https://science.sciencemag.org/content/352/6291/1337)
+- measures immunogenic potential of peptides carrying somatic mutations
+- many peptides show an unclear response (NA)
+- various predictors of immunogenicity: predicted HLA binding affinity for WT and mutant peptides, predicted HLA binding stability, predicted proteome cleavage compatibility, RNA-seq expression of the mutated gene, RNA-seq read coverage of the mutation, ...
 
 ## Data preparation for ML
 
@@ -66,13 +86,13 @@ In Machine Learning (as in some other statistical fields), we often specify our 
 
 **y**:
 
--   the *target* or *response variable*, which is generally the thing we want to be able to predict or describe at the end of the analysis.
--   **Not all analyses have a target.**
+- the *target* or *response variable*, which is generally the thing we want to be able to predict or describe at the end of the analysis.
+- **Not all analyses have a target.**
 
 **X**:
 
--   contains all the variables that can be used to predict the target or describe the data
--   table: rows are observations, columns are variables (also called features)
+- contains all the variables that can be used to predict the target or describe the data
+- table: rows are observations, columns are variables (also called features)
 
 > NB: packages from many biological fields (eg. RNA-seq) rotate the table (rows are variables, columns are obervations).
 > One has to be mindful of this and decide how best to conform the data to the packages' expectations.
@@ -178,13 +198,13 @@ phospho_recipe = recipe( formula = ~. , data = X_ph ) %>%
               base = 10, offset = 1 )
 ```
 
--   the [recipe](https://recipes.tidymodels.org/reference/recipe.html) takes the data (ie. the ingredients 😉)
--   [step_log](https://recipes.tidymodels.org/reference/step_log.html) takes something telling it which columns to transform (here, all numeric columns) + a few options
+- the [recipe](https://recipes.tidymodels.org/reference/recipe.html) takes the data (ie. the ingredients 😉)
+- [step_log](https://recipes.tidymodels.org/reference/step_log.html) takes something telling it which columns to transform (here, all numeric columns) + a few options
 
 Once the recipe is created we use:
 
--   `prep`: fits the different recipe steps with the data (here not useful but still necessary)
--   `bake`: transforms the data, or new data using the recipe
+- `prep`: fits the different recipe steps with the data (here not useful but still necessary)
+- `bake`: transforms the data, or new data using the recipe
 
 ```{r}
 phospho_recipe = phospho_recipe %>% prep()
@@ -202,10 +222,10 @@ The log-intensities are more evenly distributed compared to the raw intensities.
 
 Missing values are a common occurrence in many fields, and we need to account for them in some way (eg, remove them, or impute them) because:
 
--   missing values can be a sign of bad data quality
--   missing values can be a signal sometimes
--   many ML algorithms cannot handle missing values (eg, linear models, PCA, ...)
--   ...
+- missing values can be a sign of bad data quality
+- missing values can be a signal sometimes
+- many ML algorithms cannot handle missing values (eg, linear models, PCA, ...)
+- ...
 
 Depending on the nature of the data, they could be missing for different reasons, and the way that we handle them would be different.
 Without going too deep into the topic, handling missing values is guided by a mixture of expertise (ie, using field best practices) and data-driven or objective-driven approaches (more on this later).
@@ -360,8 +380,8 @@ recipe( df , ~. ) %>%
 
 Dimensionality reduction serves two purposes:
 
--   **Visualization**: reducing the number of dimensions to 2 or 3 allows displaying the whole dataset for visual inspection.
--   **Data compression**: some features may not be very informative, and projecting feature vectors to a reduced space discards the uninformative part of the feature space.
+- **Visualization**: reducing the number of dimensions to 2 or 3 allows displaying the whole dataset for visual inspection.
+- **Data compression**: some features may not be very informative, and projecting feature vectors to a reduced space discards the uninformative part of the feature space.
 
 ### Principal Component Analysis (PCA)
 
@@ -555,9 +575,9 @@ It measured the immunogenic potential of peptides carrying somatic mutations by 
 
 There are 3 different outcomes of the "CD8+ T cell response induced in healthy donor: Tested/Observed” feature:
 
--   11 positive (YES/YES),
--   46 negative (YES/NO),
--   977 unclear (NA).
+- 11 positive (YES/YES),
+- 46 negative (YES/NO),
+- 977 unclear (NA).
 
 The table gives various predictors of immunogenicity such as predicted HLA binding affinity for WT and mutant peptides, predicted HLA binding stability, predicted proteome cleavage compatibility, RNA-seq expression of the mutated gene, RNA-seq read coverage of the mutation.
 
@@ -601,10 +621,10 @@ df_im_pca = im_recipe %>% bake( df_im )
 
 So you can see that some things have changed with respect to the phosphoproteomics data:
 
--   recipe formula includes a response
--   `Mutant.peptide` has been set as an ID: it will be kept in the data but not used in the recipe steps and models
--   we apply the log10 transform only to some columns
--   no need for a special normalization. The default center and scale is enough
+- recipe formula includes a response
+- `Mutant.peptide` has been set as an ID: it will be kept in the data but not used in the recipe steps and models
+- we apply the log10 transform only to some columns
+- no need for a special normalization. The default center and scale is enough
 
 ```{r}
 tidy( im_recipe , number = 3 , type = 'variance' ) %>%
@@ -692,10 +712,10 @@ UMAP implements an efficient nearest neighbor search and has an overall complexi
 
 Some of the important parameters for UMAP are:
 
--   `n_components`: dimension of the embedding
--   `n_neighbors`: number of nearest neighbors to consider (corresponds to $n$ in the text)
--   `min_dist`: points in embedded space need to be separated by a distance of at least 'min_dist'
--   `metric`: metric to be used for measuring distances (corresponds to $d(x,y)$ in the text)
+- `n_components`: dimension of the embedding
+- `n_neighbors`: number of nearest neighbors to consider (corresponds to $n$ in the text)
+- `min_dist`: points in embedded space need to be separated by a distance of at least 'min_dist'
+- `metric`: metric to be used for measuring distances (corresponds to $d(x,y)$ in the text)
 
 Further information and tutorials can be found in the [UMAP vignette](https://cran.r-project.org/web/packages/umap/vignettes/umap.html).
 
@@ -805,8 +825,8 @@ ggpairs(X_aml, columns = 2:6 , aes( alpha = 0.5 , col = auc<200 ))
 **Instruction:** Perform a PCA on the gene expression data.
 Choose an interesting number of dimensions and interpret the plot:
 
--   What does the first component seem to correspond to?
--   What are driving genes behind the first component?
+- What does the first component seem to correspond to?
+- What are driving genes behind the first component?
 
 ```{r}
 ## perform your PCA here
