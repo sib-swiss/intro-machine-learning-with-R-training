@@ -285,6 +285,8 @@ In order to find the optimal value of an hyper-parameter, we can separate our or
 - a **training set** : used to fit the model;
 - a **validation set** : used to evaluate how our model performs on new data (ie. how it generalizes).
 
+![](../images/train_test_valid.svg)
+
 ```{r}
 ## to split our data into training and validation sets,
 ## we will use initial_split() from package rsample:
