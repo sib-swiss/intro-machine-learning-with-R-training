@@ -21,19 +21,18 @@ library(vip)
 library(ranger)
 ```
 
-# Regression
 
 # Introduction : re-framing the target
 
-In that part we will use all the algorithms we have seen previously but in the frame of a regression rather than a classification.
+In this chapter, we will use all the algorithms we have seen previously, but aiming for regression rather than classification.
 
 **The difference is that now our target vector (i.e. what we want to predict) is not a class (a discrete variable) but rather a number that can take continuous values.**
 
-The algorithms use very similar methods than the ones used in classification, **the main change is the loss function used to train your model and the scoring used to evaluate this model.**
+The algorithms use very similar methods than the ones used in classification, **the main change is the loss function used to train your model, and the scoring used to evaluate this model.**
 
-**For classification** we saw two main types of **loss functions**:
+For classification, we saw two main types of **loss functions**:
 
-- (log-)likelihood for models such as the logidsitc regression
+- (log-)likelihood, for models such as the logistic regression
 - GINI impurity, for trees
 
 And plenty of **scoring systems**, for example:
@@ -41,25 +40,25 @@ And plenty of **scoring systems**, for example:
 - Accuracy
 - Area under the ROC curve.
 
-In regression problems the loss functions and the scoring are metrics which you may already know.
+In regression problems, the loss functions and the scoring are metrics which you may already know.
 
-The two main **loss functions** that you will minimize while training your model are :
+The two main **loss functions** that you will minimize while training your model are:
 
-- Mean square error/ quadratic loss/ L2 loss **(MSE)** : $\frac{\Sigma^{n}_{i=1}(y_{i}-\hat{y}_{i})^{2}}{n}$
-- Mean absolute error/ L1 loss **(MAE)** : $\frac{\Sigma^{n}_{i=1}|y_{i}-\hat{y}_{i}|}{n}$
+- Mean square error / quadratic loss / L2 loss **(MSE)**: $\frac{\Sigma^{n}_{i=1}(y_{i}-\hat{y}_{i})^{2}}{n}$
+- Mean absolute error / L1 loss **(MAE)**: $\frac{\Sigma^{n}_{i=1}|y_{i}-\hat{y}_{i}|}{n}$
 
 Where
 
-- $n$ are the number of training examples
+- $n$ is the number of training examples
 - $i$ the $i$-th training example in the data set
 - $y_{i}$ the ground truth target value for that $i$-th example and
 - $\hat{y_{i}}$ the estimated value of the target for the $i$-th example.
 
-And the **scores**
+And the **scores**:
 
 - value of the minimized loss function used (MSE or MAE)
 - **R squared** : $1-\frac{\Sigma^{n}_{i=1}(y_{i}-\hat{y}_{i})^{2}}{\Sigma^{n}_{i=1}(y_{i}-\bar{y}_{i})^{2}}$: the proportion of the target's variance that's explained by the model
-- **Adjusted R squared** : $1-(1-\frac{\Sigma^{n}_{i=1}(y_{i}-\hat{y}_{i})^{2}}{\Sigma^{n}_{i=1}(y_{i}-\bar{y}_{i})^{2}}\frac{n-1}{n-(k+1)})$ , with k the degree of freedom; similar to R-squared, but takes into account the number of variables in the model.
+- **Adjusted R squared** : $1-(1-\frac{\Sigma^{n}_{i=1}(y_{i}-\hat{y}_{i})^{2}}{\Sigma^{n}_{i=1}(y_{i}-\bar{y}_{i})^{2}}\frac{n-1}{n-(k+1)})$, with k the degrees of freedom; similar to R-squared, but takes into account the number of variables in the model.
 - **Max error** : $max(|y_{i}-\hat{y}_{i}|)$
 - **Variance explained** : $1-\frac{Var(\{y_{i}-\bar{y}_{i}\}_{i})}{Var(\{y_{i}\}_{i})}$
 
@@ -76,15 +75,17 @@ It consists in measurements of the methylation levels of 13 biomarkers to try to
 The train and the test data have already been separated in two separate tables:
 
 ```{r}
-df_meth = read.table( "https://zenodo.org/record/2545213/files/train_rows.csv",
-                      sep= '\t', header = TRUE
-                      )
+df_meth = read.table( 
+  "https://zenodo.org/record/2545213/files/train_rows.csv",
+  sep= '\t', header = TRUE
+)
 df_meth %>% head()
 ```
 
 ```{r}
-df_meth_test = read.table("https://zenodo.org/record/2545213/files/test_rows_labels.csv",
-                          sep= '\t', header = TRUE)
+df_meth_test = read.table(
+  "https://zenodo.org/record/2545213/files/test_rows_labels.csv",
+  sep= '\t', header = TRUE)
 df_meth_test %>% head()
 ```
 
@@ -95,9 +96,9 @@ print( paste( "test rows :", df_meth_test %>% nrow() ))
 print( df_meth %>% colnames() )
 ```
 
-Let's check how the different features and the target interact with each others.
+Let's check how the different features and the target interact with each other.
 
-```{r}
+```{r fig.width=7, fig.height=7}
 cor_matrix = cor( df_meth, method = "pearson" )
 palette <- colorRampPalette(c("blue","white","red"))(100)
 pheatmap(cor_matrix,
@@ -140,8 +141,8 @@ RMSE= rmse( X_ELOVL2_6_a , truth = Age , estimate = .pred )
 ggplot( X_ELOVL2_6_a , aes( x = ELOVL2_6, y = Age )) +
     geom_point() +
     geom_line( aes( x = ELOVL2_6, y = .pred ) ) +
-    ggtitle( paste( "simple linear regression - R^2=" , 
-                    round(R2$.estimate,3) , " - RMSE=", round(RMSE$.estimate,2)  ) )
+    ggtitle( paste( "simple linear regression ; R^2=" , 
+                    round(R2$.estimate,3) , " ; RMSE=", round(RMSE$.estimate,2)  ) )
 
 ```
 
@@ -242,7 +243,7 @@ So it seems that increasing power to 3 increases (at least a bit) our predictive
 
 But what about the other predictors?
 
-## ML approach to linear regression - methylation data
+## Polynomial regression
 
 As we add other predictors, it can be good to also add penalization terms.
 
@@ -310,7 +311,7 @@ ggplot( rbind( df_meth_a %>% mutate( data = 'train' ),
 
 ```
 
-```{r}
+```{r fig.width=6, fig.height=6}
 VI = final_wf %>% 
     extract_fit_parsnip() %>% 
     vi(sign = TRUE) %>%
@@ -319,13 +320,13 @@ VI %>% ggplot( aes(x=Importance, y=Variable, fill=Sign) ) +
     geom_col()
 ```
 
-# KNN
+## KNN
 
 You can also use the KNN algorithm for regression. Again you get the K nearest neighbors of the point you want to predict but this time instead of a vote it does a local average of the neighbors value (again weighted or not by their distance to your query point).
 
 **micro-exercise:** complete the code below to train a KNN regressor model for the methylation data. Optimize the `neighbors` and `weight_func` hyper-parameters:
 
-```{r}
+```
 R = recipe( df_meth , Age ~ . ) %>%
     step_normalize( all_numeric_predictors()) %>%
     step_poly( all_numeric_predictors(), degree = tune() )
@@ -348,13 +349,13 @@ degree_res %>% show_best(metric = 'rmse')
 
 ------------------------------------------------------------------------
 
-So we see that the model we get from KKN is not bad at all **but** the interpretability is lacking in this model.
+So we see that the model we get from KKN is not bad at all, **but** the interpretability is lacking in this model.
 
-> KNN regressor is not really good at predicting sparse neigborhoods (eg, the predictions for the extreme data points are not accurate).
+> A KNN regressor is not really good at predicting sparse neigborhoods (eg, the predictions for the extreme data points are not accurate).
 
 ## Random Forest
 
-From the standpoint of tree, the only difference is that now, instead of the entropy or Gini criterion, **the decision which variable to use at any node is made using a regression metric**, such as squared error for example.
+From the standpoint of tree, the only difference is that now, instead of the entropy or Gini criterion, **the decision of which variable to use at any node is made using a regression metric**, such as squared error for example.
 
 For example, consider this example, adapted from the sklearn website:
 
@@ -440,20 +441,22 @@ We go back to the potato dataset we introduced in notebook 3.
 
 ------------------------------------------------------------------------
 
-**Note**: here the data has already been filtered to keep only the top 200 genes (that is still a lot, but manageable ). However often your data will have \>10 000 genes, which would create issues in practice (more that just slowing down the training, some models will fail to find a good solution).
+**Note**: here the data has already been filtered to keep only the top 200 genes (that is still a lot, but manageable). However, often your data will have \>10 000 genes, which would create issues in practice (more that just slowing down the training, some models will fail to find a good fit).
 
-solutions include:
+Solutions include:
 
 - detecting genes with low variance and removing them (you can use [step_rm](https://recipes.tidymodels.org/reference/step_rm.html) to remove variables by name once you have decided which to remove)
-- a preliminary PCA are your friend (use scores adapted to regression)
+- a preliminary PCA is your friend (use scores adapted to regression)
 
-Anyhow, end of the rent. As I said in this dataset you should be OK (although you could try a PCA if you are curious)
+Anyhow, end of the rant. As I said, in this dataset you should be OK (although you could try a PCA if you are curious).
 
 ------------------------------------------------------------------------
 
 1.  split train and test
 2.  try linear regression (with different degrees if you wish)
-3.  random forest What do you learn about Flesh Color?
+3.  random forest
+
+What do you learn about Flesh Color?
 
 ```{r}
 file_metadata = "../data/potato_data.phenotypic.csv"
@@ -462,7 +465,7 @@ file_data = "../data/potato_data.transcriptomic.top200norm.csv"
 df = read.csv( file_metadata , row.names=1 )
 dfTT = read.csv( file_data , row.names=1 )
 
-dfTT %>% head()
+dfTT[,1:5] %>% head()
 ```
 
 ```{r}
