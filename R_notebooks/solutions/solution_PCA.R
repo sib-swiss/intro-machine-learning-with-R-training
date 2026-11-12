@@ -8,7 +8,7 @@ aml_recipe = recipe( X_aml , auc ~ . ) %>% # set AUC as response
 df_aml_pca = aml_recipe %>% bake( X_aml )
 
 ## cumulative variance % 
-tidy( im_recipe , number = 3 , type = 'variance' ) %>%
+tidy( aml_recipe , number = 2 , type = 'variance' ) %>%
   filter( terms ==  "cumulative percent variance") %>%
   ggplot( aes(x = component, y = value)) +
   geom_line() +
@@ -20,7 +20,8 @@ tidy( im_recipe , number = 3 , type = 'variance' ) %>%
 prcomp_obj = aml_recipe$steps[[2]]$res
 
 ggbiplot(prcomp_obj, 
-         groups = X_aml$auc,
+         # groups = X_aml$auc, # will not work with a cont value for more recent versions of ggbiplot
+         groups = factor(X_aml$auc>200), # will not work with a cont value for more recent versions of ggbiplot
          choices = c(1,2),
          alpha = 0.8,
          varname.size = 3,
