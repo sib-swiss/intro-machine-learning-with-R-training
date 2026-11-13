@@ -297,7 +297,7 @@ We re-use the code of the last notebook, **but** (there's always a but), we need
 
 Before we were optimizing for $R^2$, which appropriate for regression tasks, but now we will switch it for **accuracy**, which is appropriate for classification.
 
-**micro-exercise:** Change the code below so the tuning:
+### **micro-exercise:** Change the code below so the tuning:
 
 - operates on accuracy instead of $R^2$.
 - explores hyper-parameters of the KNN (*hint: look at the documentation for [grid_regular](https://dials.tidymodels.org/reference/grid_regular.html)*):
