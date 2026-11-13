@@ -18,7 +18,6 @@ library(recipes)
 library(ggbiplot)
 ```
 
-# Data exploration
 
 ## tidymodels 101
 
@@ -334,14 +333,14 @@ heatmap.2( cor( X_ph_positive ) ,
 
 We see that the replicates of the same mutant strain correlate and the mutant strain has a stronger effect than the treatment (1NMPP1 or DMSO), but removing missing values in this case clearly improves the correlation between treatments!
 
-**Micro exercise** : vizualize the correlation between samples on the data imputed with the column mean.
+**Micro exercise**: visualize the correlation between samples on the data imputed with the column mean.
 Which strategy now seems preferable?
 
 ```{r}
 
 ```
 
-For more imputation techniques check : [recipes impute steps imputation](https://recipes.tidymodels.org/reference/step_impute_mean.html?q=transpose#see-also).
+For more imputation techniques check: [recipes impute steps imputation](https://recipes.tidymodels.org/reference/step_impute_mean.html?q=transpose#see-also).
 
 > There is abundant literature and sophisticated methods on missing value imputation.
 > Unfortunately we cannot cover this important subject in this course, but we encourgae you to check the [SIB training's missing data and imputation course](https://www.sib.swiss/training/course/IMPUT).
@@ -359,7 +358,7 @@ However, unordered categorical features or factors (e.g. color = blue, gray, pin
 This is the so-called One-Hot encoding of categorical features.
 This is done with [step_dummy](https://recipes.tidymodels.org/articles/Dummies.html).
 
-For instance, let's consider the following toy dataset with 3 columns : 2 categorical and 1 ordinal.
+For instance, let's consider the following toy dataset with 3 columns: 2 categorical and 1 ordinal.
 
 ```{r}
 df = data.frame(varA = c('a', 'b', 'a'),
@@ -781,14 +780,14 @@ ggplot( NULL , aes( x = im_umap$layout[,1] ,
 
 ```
 
-Finally, UMAP does neither conserve distances nor densities : it is truly a visualization technique and should not be used with other clustering techniques that require distance or density conservation between full and reduced space.
+Finally, UMAP does not conserve distances nor densities: it is truly a visualization technique and should not be used with other clustering techniques that require distance or density conservation between full and reduced space.
 
 It is also possible for UMAP to "hallucinate" some clusters and to break existing ones.
 The following [article](https://distill.pub/2016/misread-tsne/) has been written for t-SNE but most of it still applies to UMAP.
 
 ## Exercise: PCA
 
-**Another dataset : AML**
+**Another dataset: AML**
 
 In the following dataset from [Tyner et al. 2018](https://doi.org/10.1038/s41586-018-0623-z) we have the expression level of some genes from some different Acute Myeloid Leukaemia (AML) tumors, as well as how they respond to treatment (AUC value).
 

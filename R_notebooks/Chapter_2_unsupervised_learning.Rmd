@@ -585,7 +585,7 @@ table( index_colors )
 
 Instructions:
 
-1.  perform a PCA and visualize the results, only keep 500 components.
+1.  perform a PCA and visualize the results, only keep 500 principal components.
 2.  try to cluster the cells using k-means or hierarchical clustering. Try several parameter values and evaluate your clustering with a metric.
 3.  try the same thing, but use only the 50 first PCA components. Do you get better results?
 
