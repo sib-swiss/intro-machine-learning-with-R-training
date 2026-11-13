@@ -511,7 +511,8 @@ perm_scores <- vi_permute(
   train = BC_train,              # Data to permute on
   target = "malignant",          # Name of the target column
   metric = "roc_auc",            # Or "accuracy", "roc_auc", etc.
-  nsim = 10,                     # Number of permutation runs (>= 2 required for variability)  
+  nsim = 10,                     # Number of permutation runs (>= 2 required for variability),
+                                 # in practice better to do >=100
   pred_wrapper = pred_wts
 )
 
