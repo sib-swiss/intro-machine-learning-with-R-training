@@ -768,11 +768,15 @@ for( n2 in seq(5,300,5) ){
 
 tmp = data.frame( n2_ratio = n2_ratio , 
                   accuracy = ACC,
-                  recall = RECALL ) %>% pivot_longer( 2:3 , 
-                                                      names_to = 'metric',
-                                                      values_to = 'value')
+                  recall = RECALL ) %>% 
+  pivot_longer( 2:3 , 
+                names_to = 'metric',
+                values_to = 'value')
 
-ggplot(tmp , aes(x=n2_ratio,y=value , col=metric)) + geom_line()
+ggplot(tmp , aes(x=n2_ratio,y=value , col=metric)) + geom_line() +
+  geom_vline(xintercept = 1, linetype = "dashed", color = "darkblue") +
+  annotate("text", x = 1, y = 0.9, label = "balanced", color = "darkblue",
+           angle = -90, vjust = -0.5)
 ```
 
 Other metrics that consider FPs and FNs can be used in situations such as this:
