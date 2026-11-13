@@ -28,7 +28,8 @@ In this notebook we are going to learn what a **decision tree** is, how
 it does classification, and what its **hyperparameters** are.
 
 Then we are going to superficially describe how decision trees are basic
-bricks of more powerful algorithms called **ensemble algorithms**.
+bricks of more powerful algorithms called **random forests**, 
+which are part of the broader **ensemble algorithms**.
 
 # Meet the data
 
