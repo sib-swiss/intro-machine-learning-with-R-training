@@ -853,8 +853,8 @@ This is similar to indicating to our model that making mistakes with the rare cl
 blobs2 = make2blobs(300,30)
 
 ## weighting them by the inverse of their frequency
-wgtA = 1/30
-wgtB = 1/300
+wgtA = 1/30  # 1/sum(blobs2$label=="A")
+wgtB = 1/300 # 1/sum(blobs2$label=="B")
 
 blobs2 <- blobs2 %>%
   mutate(
