@@ -810,7 +810,10 @@ tmp = data.frame( n2_ratio , acc, rec, bal_acc,f1 ) %>% pivot_longer(
   names_to = 'metric',
   values_to = 'value')
 
-ggplot(tmp , aes(x=n2_ratio,y=value , col=metric)) + geom_line()
+ggplot(tmp , aes(x=n2_ratio,y=value , col=metric)) + geom_line()+
+  geom_vline(xintercept = 1, linetype = "dashed", color = "darkblue") +
+  annotate("text", x = 1, y = 0.9, label = "balanced", color = "darkblue",
+           angle = -90, vjust = -0.5)
 ```
 
 These do not necessarily help with the imbalance itself, though.
