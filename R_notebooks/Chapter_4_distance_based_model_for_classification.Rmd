@@ -1063,7 +1063,7 @@ lr_blobs_aug %>% roc_curve( truth = label, c(.pred_1, .pred_2, .pred_3) ) %>% au
 
 ## Micro-exercise: logistic regression
 
-Now that you know about imbalance, adapt the code below to optimize the hyper-parameters of a logistic regression classifier on the cancer dataset to optimize the F1 score and properly account for imbalance.
+Now that you know about imbalance, adapt the code below to optimize the hyper-parameters of a logistic regression classifier on the cancer dataset. Use the F1 score and properly account for imbalance.
 
 > **IMPORTANT NOTE:** you may get some warnings about precision computation in some cases. These are caused by some high penalty values. You can generally ignore them as long as at least some of the penalty values in the grid produce some results.
 
