@@ -139,7 +139,7 @@ a regularization:
 
 - `tree_depth`: the maximum number of consecutive questions to ask.
 - `min_n`: minimum number of points in a node to consider splitting it
-  further.
+  further (not necessarily intuitive, see below).
 - `cost_complexity`: required minimal improvement per split.
 
 ```{r}
