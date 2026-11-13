@@ -45,13 +45,15 @@ hc_sweep = clusterSweep( rpkm_pca ,
 
 ## compute silhouette
 sil <- vapply(as.list(hc_sweep$clusters), 
-              function(clustering) mean(approxSilhouette(rpkm_pca,
-                                                         clustering)$width), 0)
+              function(clustering) 
+                mean(approxSilhouette(rpkm_pca,
+                                      clustering)$width), 0)
 
 ## compute ARIs
 ARIs <- vapply(as.list(hc_sweep$clusters), 
-               function(clustering) pairwiseRand(index_colors, 
-                                                 clustering, mode= 'index'), 0)
+               function(clustering) 
+                 pairwiseRand(index_colors, 
+                              clustering, mode= 'index'), 0)
 
 scores_HC = data.frame( 
   K = unlist( hc_sweep$parameters$cut.params ),
@@ -70,13 +72,15 @@ km_sweep = clusterSweep( rpkm_pca ,
 
 ## compute silhouette
 sil <- vapply(as.list(km_sweep$clusters), 
-              function(clustering) mean(approxSilhouette(rpkm_pca,
-                                                         clustering)$width), 0)
+              function(clustering) 
+                mean(approxSilhouette(rpkm_pca,
+                                      clustering)$width), 0)
 
 ## compute ARIs
 ARIs <- vapply(as.list(km_sweep$clusters), 
-               function(clustering) pairwiseRand(index_colors, 
-                                                 clustering, mode= 'index'), 0)
+               function(clustering) 
+                 pairwiseRand(index_colors, 
+                              clustering, mode= 'index'), 0)
 
 scores_KM = data.frame( 
   K = km_sweep$parameters$centers,
@@ -123,13 +127,15 @@ hc_sweep = clusterSweep( rpkm_pca ,
 
 ## compute silhouette
 sil <- vapply(as.list(hc_sweep$clusters), 
-              function(clustering) mean(approxSilhouette(rpkm_pca,
-                                                         clustering)$width), 0)
+              function(clustering) 
+                mean(approxSilhouette(rpkm_pca,
+                                      clustering)$width), 0)
 
 ## compute ARIs
 ARIs <- vapply(as.list(hc_sweep$clusters), 
-               function(clustering) pairwiseRand(index_colors, 
-                                                 clustering, mode= 'index'), 0)
+               function(clustering) 
+                 pairwiseRand(index_colors, 
+                              lustering, mode= 'index'), 0)
 
 scores_HC = data.frame( 
   K = unlist( hc_sweep$parameters$cut.params ),
@@ -148,13 +154,15 @@ km_sweep = clusterSweep( rpkm_pca ,
 
 ## compute silhouette
 sil <- vapply(as.list(km_sweep$clusters), 
-              function(clustering) mean(approxSilhouette(rpkm_pca,
-                                                         clustering)$width), 0)
+              function(clustering) 
+                mean(approxSilhouette(rpkm_pca,
+                                      clustering)$width), 0)
 
 ## compute ARIs
 ARIs <- vapply(as.list(km_sweep$clusters), 
-               function(clustering) pairwiseRand(index_colors, 
-                                                 clustering, mode= 'index'), 0)
+               function(clustering) 
+                 pairwiseRand(index_colors, 
+                              clustering, mode= 'index'), 0)
 
 scores_KM = data.frame( 
   K = km_sweep$parameters$centers,
