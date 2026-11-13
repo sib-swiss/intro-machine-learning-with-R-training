@@ -37,7 +37,7 @@ library(glmnet)
 
 # Meet the data
 
-## Binary class dataset : breast cancer
+## Binary class dataset: breast cancer
 
 In the cancer dataset, there are 569 tumors for which many image-based features have been measured. The goal is to predict if the tumor is malignant or not.
 
@@ -54,17 +54,17 @@ BreastCancer %>% head()
 
 Columns are:
 
-- **mean.radius** : average cell radius
-- **mean.texture** : average cell texture metric
-- **mean.perimeter** : average cell perimeter
-- **mean.area** : average cell area
-- **mean.smoothness** : average cell smoothness metric
-- **mean.compactness** : average cell compactness metric
-- **mean.concavity** : average cell concavity metric
-- **mean.concave.points** : average cell concavity metric
-- **mean.symmetry** : average cell symmetry
-- **mean.fractal.dimension** : average cell fractal dimension
-- **malignant** : benign (0) or malignant (1)
+- **mean.radius**: average cell radius
+- **mean.texture**: average cell texture metric
+- **mean.perimeter**: average cell perimeter
+- **mean.area**: average cell area
+- **mean.smoothness**: average cell smoothness metric
+- **mean.compactness**: average cell compactness metric
+- **mean.concavity**: average cell concavity metric
+- **mean.concave.points**: average cell concavity metric
+- **mean.symmetry**: average cell symmetry
+- **mean.fractal.dimension**: average cell fractal dimension
+- **malignant**: benign (0) or malignant (1)
 
 ```{r}
 table( BreastCancer$malignant  )
@@ -238,23 +238,23 @@ There are many additional hyper-parameters we could consider as well:
 
 - the imputation strategy
 - the normalization strategy
-- dimensionality reduction : how many PCA axes do I keep?
+- dimensionality reduction: how many PCA axes do I keep?
 - choice of the classification algorithm (KNN, logistic regression, random forest, neural network, ...)
 
 ...
 
-### A metric to score classification : accuracy
+### A metric to score classification: accuracy
 
-One straightforward metric to evaluate our model is the accuracy. Accuracy is only meaningful on the test set, though it can give you some good insight about your model when comparing test and training sets.
+One straightforward metric to evaluate our model is the accuracy. Accuracy is only meaningful on the test set, though it can give you some good insight into your model when comparing test and training sets.
 
-Accuracy is defined as follow : $\frac{TP+TN}{P+N}$
+Accuracy is defined as follows: $\frac{TP+TN}{P+N}$
 
-- TP : True Positive
-- TN : True Negative
-- FP : False Positive
-- FN : False Negative
-- P : Positive : $P=TP+FN$
-- N : Negative : $N=TN+FP$
+- TP: True Positive
+- TN: True Negative
+- FP: False Positive
+- FN: False Negative
+- P: Positive: $P=TP+FN$
+- N: Negative: $N=TN+FP$
 
 In code, we can compute it from a data.frame with the `accuracy` function, and with `accuracy_vec` if we have two vectors:
 
@@ -297,12 +297,12 @@ We re-use the code of the last notebook, **but** (there's always a but), we need
 
 Before we were optimizing for $R^2$, which appropriate for regression tasks, but now we will switch it for **accuracy**, which is appropriate for classification.
 
-**micro-exercise:** Change the code below so the tuning :
+**micro-exercise:** Change the code below so the tuning:
 
 - operates on accuracy instead of $R^2$.
 - explores hyper-parameters of the KNN (*hint: look at the documentation for [grid_regular](https://dials.tidymodels.org/reference/grid_regular.html)*):
-  - `weight_func` : try rectangular, triangular, and optimal
-  - `neighbors` : can take values between 1 and 30
+  - `weight_func`: try rectangular, triangular, and optimal
+  - `neighbors`: can take values between 1 and 30
 
 ```         
 # we add a normalization step, so we need a recipe:
@@ -372,9 +372,9 @@ final_fit %>%
   collect_metrics()
 ```
 
-We see that on top of accuracy, yardstick also computes by default the :
+We see that on top of accuracy, yardstick also computes by default the:
 
-- ROC AUC : area under the ROC curve (more on that later)
+- ROC AUC: area under the ROC curve (more on that later)
 - brier score: equivalent to MSE for classification, the best value is 0
 
 ```{r}
@@ -532,7 +532,7 @@ In order to avoid this situation, we can add a **penalty to the loss function** 
 
 Where $\alpha$ is the weight of the regularization.
 
-For a deeper understanding of those notions :
+For a deeper understanding of those notions:
 
 - [datacamp tutorial](https://www.datacamp.com/community/tutorials/tutorial-ridge-lasso-elastic-net)
 
@@ -643,7 +643,7 @@ It looks like cross-validated performance of both models are very similar here.
 
 Let's check how the logistic regression actually discriminates the two classes with the code below.
 
-Or said differently : **what can we learn from our model**, apart from pure classification?
+Or said differently: **what can we learn from our model**, apart from pure classification?
 
 In logistic regression, the variable importances are derived from the model coefficients. We could extract them manually, but alternatively the `vip` (**v**ariable **i**mportance **p**lots) can help us.
 
@@ -747,7 +747,7 @@ So, most of the class A samples are miss-classified (22/30), but we still get a 
 
 That is because, by construction, both the **logistic regression and accuracy score do not differentiate False Positives and False Negatives**.
 
-And the problem gets worse the more imbalance there is :
+And the problem gets worse the more imbalance there is:
 
 ```{r}
 n2_ratio = c()
@@ -995,15 +995,15 @@ LR <- multinom_reg( penalty = 0.05, engine = 'glmnet' ) %>%
 table( LR %>% predict( blobs ) )
 ```
 
-In a multiclass scenario, we have to consider several possibilities regarding metrics :
+In a multiclass scenario, we have to consider several possibilities regarding metrics:
 
-- **no change** : accuracy for example, extends naturally to multiclass (because it does not differentiate between types of errors).
+- **no change**: accuracy for example, extends naturally to multiclass (because it does not differentiate between types of errors).
 
-- **macro-averaging** : compute the metric independently for each class, and then average the results. NB: all classes get the same weight.
+- **macro-averaging**: compute the metric independently for each class, and then average the results. NB: all classes get the same weight.
 
-- **weighted macro-averaging** : same as macro-average, but the class metrics are weighted by the number of observations in each class.
+- **weighted macro-averaging**: same as macro-average, but the class metrics are weighted by the number of observations in each class.
 
-- **micro-averaging** : determines counts of TP,FN, ... independently, then pulls these numbers across all classes to compute a metric.
+- **micro-averaging**: determines counts of TP,FN, ... independently, then pulls these numbers across all classes to compute a metric.
 
 - **specific implementation**: some metrics have a special multiclass algorithm. You will have to check their specific documentation to know more.
 
@@ -1018,7 +1018,7 @@ table( lr_blobs_aug$label , lr_blobs_aug$.pred_class )
 ```
 
 ```{r}
-## accuracy : no change
+## accuracy: no change
 lr_blobs_aug %>% accuracy( truth = label,  .pred_class )
 ```
 
@@ -1034,17 +1034,17 @@ for( c in 1:3){
 ```
 
 ```{r}
-## recall : macro (default)
+## recall: macro (default)
 lr_blobs_aug %>% recall( truth = label,  .pred_class )
 ```
 
 ```{r}
-## recall : macro weighted
+## recall: macro weighted
 lr_blobs_aug %>% recall( truth = label,  .pred_class , estimator = "macro_weighted")
 ```
 
 ```{r}
-## recall : micro (for recall, should be the same as macro-weighted)
+## recall: micro (for recall, should be the same as macro-weighted)
 lr_blobs_aug %>% recall( truth = label,  .pred_class , estimator = "micro")
 ```
 
@@ -1119,7 +1119,7 @@ table(framingham$TenYearCHD)
 str(framingham)
 ```
 
-Build and optimize a classifier to predict the column `'TenYearCHD'` (dependent variable : ten year risk of coronary heart disease).
+Build and optimize a classifier to predict the column `'TenYearCHD'` (dependent variable: ten year risk of coronary heart disease).
 
 - use a KNN classifier or Logistic regression, ideally, compare them and choose the best.
 
